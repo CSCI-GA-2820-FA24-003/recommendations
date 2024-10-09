@@ -23,8 +23,8 @@ import os
 import logging
 from unittest import TestCase
 from wsgi import app
-from service.models import YourResourceModel, DataValidationError, db
-from .factories import YourResourceModelFactory
+from service.models import Recommendations, DataValidationError, db
+from .factories import RecommendationsFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -32,11 +32,11 @@ DATABASE_URI = os.getenv(
 
 
 ######################################################################
-#  YourResourceModel   M O D E L   T E S T   C A S E S
+#  RECOMMENDATIONS   M O D E L   T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestYourResourceModel(TestCase):
-    """Test Cases for YourResourceModel Model"""
+class TestRecommendations(TestCase):
+    """Test Cases for Recommendations Model"""
 
     @classmethod
     def setUpClass(cls):
@@ -54,7 +54,7 @@ class TestYourResourceModel(TestCase):
 
     def setUp(self):
         """This runs before each test"""
-        db.session.query(YourResourceModel).delete()  # clean up the last tests
+        db.session.query(Recommendations).delete()  # clean up the last tests
         db.session.commit()
 
     def tearDown(self):
@@ -65,15 +65,17 @@ class TestYourResourceModel(TestCase):
     #  T E S T   C A S E S
     ######################################################################
 
-    def test_example_replace_this(self):
-        """It should create a YourResourceModel"""
-        # Todo: Remove this test case example
-        resource = YourResourceModelFactory()
-        resource.create()
-        self.assertIsNotNone(resource.id)
-        found = YourResourceModel.all()
-        self.assertEqual(len(found), 1)
-        data = YourResourceModel.find(resource.id)
-        self.assertEqual(data.name, resource.name)
+    def test_create_recommendation(self):
+        recommendations = RecommendationsFactory()
+        recommendations.create()
 
-    # Todo: Add your test cases here...
+        self.assertIsNotNone(recommendations.id)
+        found = Recommendations.all()
+        self.assertEqual(len(found), 1)
+
+        data = Recommendations.find(recommendations.id)
+
+        self.assertEqual(data.product_id, recommendations.product_id)
+        self.assertEqual(data.recommended_id, recommendations.recommended_id)
+        self.assertEqual(data.status, recommendations.status)
+        self.assertEqual(data.type, recommendations.type)
