@@ -30,8 +30,9 @@ class Recommendations(db.Model):
     recommended_id = db.Column(
         db.Integer, nullable=False
     )  # ID of the recommended product
-    type = db.Column(
-        db.Enum("cross-sell", "up-sell", "accessory", name="type"), nullable=False
+    recommendation_type = db.Column(
+        db.Enum("cross-sell", "up-sell", "accessory", name="recommendation_type"),
+        nullable=False,
     )  # Type of recommendation (cross-sell, up-sell, accessory)
     status = db.Column(
         db.Enum("active", "expired", "draft", name="status"), nullable=False
@@ -111,7 +112,7 @@ class Recommendations(db.Model):
             "id": self.id,
             "product_id": self.product_id,
             "recommended_id": self.recommended_id,
-            "type": self.type,
+            "recommendation_type": self.recommendation_type,
             "status": self.status,
         }
 
@@ -125,7 +126,7 @@ class Recommendations(db.Model):
         try:
             self.product_id = data["product_id"]
             self.recommended_id = data["recommended_id"]
-            self.type = data["type"]
+            self.recommendation_type = data["recommendation_type"]
             self.status = data["status"]
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
