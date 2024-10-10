@@ -78,4 +78,4 @@ class TestRecommendations(TestCase):
         self.assertEqual(data.product_id, recommendations.product_id)
         self.assertEqual(data.recommended_id, recommendations.recommended_id)
         self.assertEqual(data.status, recommendations.status)
-        self.assertEqual(data.type, recommendations.type)
+        self.assertEqual(data.recommendation_type, recommendations.recommendation_type)

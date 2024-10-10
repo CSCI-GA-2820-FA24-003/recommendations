@@ -96,7 +96,10 @@ class TestYourResourceService(TestCase):
         self.assertEqual(
             new_recommendation["recommended_id"], test_recommendation.recommended_id
         )
-        self.assertEqual(new_recommendation["type"], test_recommendation.type)
+        self.assertEqual(
+            new_recommendation["recommendation_type"],
+            test_recommendation.recommendation_type,
+        )
 
         # Todo: uncomment this code when get_recommendations is implemented
         # # Check that the location header was correct
@@ -109,4 +112,4 @@ class TestYourResourceService(TestCase):
         # self.assertEqual(
         #     new_recommendation["recommended_id"], test_recommendation.recommended_id
         # )
-        # self.assertEqual(new_recommendation["type"], test_recommendation.type)
+        # self.assertEqual(new_recommendation["recommendation_type"], test_recommendation.recommendation_type)
