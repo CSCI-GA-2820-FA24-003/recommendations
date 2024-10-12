@@ -65,6 +65,23 @@ class TestYourResourceService(TestCase):
         """This runs after each test"""
         db.session.remove()
 
+    ############################################################
+    # Utility function to bulk create recommendations
+    ############################################################
+    def _create_recommendations(self, count: int = 1) -> list:
+        """Factory method to create recommendations in bulk"""
+        recommendations = []
+        for _ in range(count):
+            test_recommendation = RecommendationsFactory()
+            response = self.client.post(BASE_URL, json=test_recommendation.serialize())
+            self.assertEqual(
+                response.status_code, status.HTTP_201_CREATED, "Could not create test recommendation"
+            )
+            new_recommendation = response.get_json()
+            test_recommendation.id = new_recommendation["id"]
+            recommendations.append(test_recommendation)
+        return recommendations
+
     ######################################################################
     #  P L A C E   T E S T   C A S E S   H E R E
     ######################################################################
@@ -113,3 +130,46 @@ class TestYourResourceService(TestCase):
         #     new_recommendation["recommended_id"], test_recommendation.recommended_id
         # )
         # self.assertEqual(new_recommendation["recommendation_type"], test_recommendation.recommendation_type)
+
+
+    # ----------------------------------------------------------
+    # TEST READ
+    # ----------------------------------------------------------
+    def test_get_recommendation(self):
+        """It should Get a single Recommendation"""
+        # get the id of a recommendation
+        test_recommendation = self._create_recommendations(1)[0]
+        response = self.client.get(f"{BASE_URL}/{test_recommendation.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["id"], test_recommendation.id)
+
+    def test_get_recommendation_not_found(self):
+        """It should not Get a Recommendation thats not found"""
+        response = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.get_json()
+        logging.debug("Response data = %s", data)
+        self.assertIn("was not found", data["message"])
+
+
+    # ----------------------------------------------------------
+    # TEST DELETE
+    # ----------------------------------------------------------
+    def test_delete_recommendation(self):
+        """It should Delete a Recommendation"""
+        test_recommendation = self._create_recommendations(1)[0]
+        response = self.client.delete(f"{BASE_URL}/{test_recommendation.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+        # make sure they are deleted
+        response = self.client.get(f"{BASE_URL}/{test_recommendation.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        print(f"Response status code: {response.status_code}, Response data: {response.data}")
+
+
+    def test_delete_non_existing_recommendation(self):
+        """It should Delete a Recommendation even if it doesn't exist"""
+        response = self.client.delete(f"{BASE_URL}/0")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
