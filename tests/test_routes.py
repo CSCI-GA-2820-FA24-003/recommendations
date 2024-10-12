@@ -68,6 +68,7 @@ class TestYourResourceService(TestCase):
     ############################################################
     # Utility function to bulk create recommendations
     ############################################################
+
     def _create_recommendations(self, count: int = 1) -> list:
         """Factory method to create recommendations in bulk"""
         recommendations = []

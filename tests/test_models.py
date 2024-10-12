@@ -15,7 +15,7 @@
 ######################################################################
 
 """
-Test cases for Pet Model
+Test cases for recommendation Model
 """
 
 # pylint: disable=duplicate-code
@@ -66,6 +66,7 @@ class TestRecommendations(TestCase):
     ######################################################################
 
     def test_create_recommendation(self):
+        """It should Create a recommendation and assert that it exists"""
         recommendations = RecommendationsFactory()
         recommendations.create()
 
@@ -79,3 +80,15 @@ class TestRecommendations(TestCase):
         self.assertEqual(data.recommended_id, recommendations.recommended_id)
         self.assertEqual(data.status, recommendations.status)
         self.assertEqual(data.recommendation_type, recommendations.recommendation_type)
+
+    def test_list_all_recommendations(self):
+        """It should List all recommendations in the database"""
+        recommendations = Recommendations.all()
+        self.assertEqual(recommendations, [])
+        # Create 5 recommendations
+        for _ in range(5):
+            recommendation = RecommendationsFactory()
+            recommendation.create()
+        # See if we get back 5 recommendations
+        recommendations = Recommendations.all()
+        self.assertEqual(len(recommendations), 5)
