@@ -65,8 +65,28 @@ class TestYourResourceService(TestCase):
         """This runs after each test"""
         db.session.remove()
 
+    ############################################################
+    # Utility function to bulk create recommendations
+    ############################################################
+
+    def _create_recommendations(self, count: int = 1) -> list:
+        """Factory method to create recommendations in bulk"""
+        recommendations = []
+        for _ in range(count):
+            test_recommendation = RecommendationsFactory()
+            response = self.client.post(BASE_URL, json=test_recommendation.serialize())
+            self.assertEqual(
+                response.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test recommendation",
+            )
+            new_recommendation = response.get_json()
+            test_recommendation.id = new_recommendation["id"]
+            recommendations.append(test_recommendation)
+        return recommendations
+
     ######################################################################
-    #  P L A C E   T E S T   C A S E S   H E R E
+    # T E S T   C A S E S
     ######################################################################
 
     def test_index(self):
@@ -113,3 +133,14 @@ class TestYourResourceService(TestCase):
         #     new_recommendation["recommended_id"], test_recommendation.recommended_id
         # )
         # self.assertEqual(new_recommendation["recommendation_type"], test_recommendation.recommendation_type)
+
+    # ----------------------------------------------------------
+    # TEST LIST
+    # ----------------------------------------------------------
+    def test_get_recommendation_list(self):
+        """It should Get a list of recommendations"""
+        self._create_recommendations(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)

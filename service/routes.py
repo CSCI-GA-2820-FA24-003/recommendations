@@ -45,6 +45,35 @@ def index():
 
 
 ######################################################################
+# LIST ALL RECOMMENDATIONS
+######################################################################
+@app.route("/recommendations", methods=["GET"])
+def list_recommendations():
+    """Returns all of the recommendations"""
+    app.logger.info("Request for recommendation list")
+
+    recommendations = []
+
+    # Parse any arguments from the query string
+    product_id = request.args.get("product_id")
+    recommended_id = request.args.get("recommended_id")
+
+    if product_id:
+        app.logger.info("Find by product_id: %s", product_id)
+        recommendations = Recommendations.find_by_product_id(product_id)
+    elif recommended_id:
+        app.logger.info("Find by recommended_id: %s", recommended_id)
+        recommendations = Recommendations.find_by_recommended_id(recommended_id)
+    else:
+        app.logger.info("Find all")
+        recommendations = Recommendations.all()
+
+    results = [recommendation.serialize() for recommendation in recommendations]
+    app.logger.info("Returning %d recommendations", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
+
+######################################################################
 # CREATE A NEW RECOMMENDATION
 ######################################################################
 @app.route("/recommendations", methods=["POST"])
