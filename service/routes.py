@@ -63,10 +63,22 @@ def list_recommendations():
 
     if product_id:
         app.logger.info("Find by product_id: %s", product_id)
-        recommendations = Recommendations.find_by_product_id(product_id)
+        # Validate product_id is an integer
+        try:
+            product_id = int(product_id)
+            recommendations = Recommendations.find_by_product_id(product_id)
+        except ValueError:
+            app.logger.error("Invalid product_id")
+            raise BadRequest("Invalid product_id: must be an integer")
     elif recommended_id:
         app.logger.info("Find by recommended_id: %s", recommended_id)
-        recommendations = Recommendations.find_by_recommended_id(recommended_id)
+        # Validate recommended_id is an integer
+        try:
+            recommended_id = int(recommended_id)
+            recommendations = Recommendations.find_by_recommended_id(recommended_id)
+        except ValueError:
+            app.logger.error("Invalid recommended_id")
+            raise BadRequest("Invalid recommended_id: must be an integer")
     else:
         app.logger.info("Find all")
         recommendations = Recommendations.all()
@@ -88,14 +100,25 @@ def create_recommendations():
     app.logger.info("Request to Create a Recommendation...")
     check_content_type("application/json")
 
-    recommendation = Recommendations()
-    # Get the data from the request and deserialize it
-    data = request.get_json()
-    app.logger.info("Processing: %s", data)
-    recommendation.deserialize(data)
+    try:
+        recommendation = Recommendations()
+        # Get the data from the request and deserialize it
+        data = request.get_json()
+        app.logger.info("Processing: %s", data)
+        recommendation.deserialize(data)
 
-    # Save the new Recommendation to the database
-    recommendation.create()
+        # Save the new Recommendation to the database
+        recommendation.create()
+    except DataValidationError as e:
+        app.logger.error("Data validation error: %s", str(e))
+        abort(status.HTTP_400_BAD_REQUEST, str(e))
+    except SQLAlchemyError as e:
+        app.logger.error("Database error: %s", str(e))
+        abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "Database error occurred")
+    except Exception as e:
+        app.logger.error("Unexpected error: %s", str(e))
+        abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "An unexpected error occurred")
+
     app.logger.info("Recommendation with new id [%s] saved!", recommendation.id)
 
     # Todo: uncomment this code when get_recommendations is implemented
@@ -144,20 +167,33 @@ def get_recommendations(recommendation_id):
 def delete_recommendations(recommendation_id):
     """
     Delete a Recommendation
-
     This endpoint will delete a Recommendation based the id specified in the path
     """
     app.logger.info(
         "Request to Delete a recommendation with id [%s]", recommendation_id
     )
 
-    # Delete the Recommendation if it exists
+    # Find the recommendation by id
     recommendation = Recommendations.find(recommendation_id)
-    if recommendation:
-        app.logger.info("Recommendation with ID: %d found.", recommendation.id)
-        recommendation.delete()
 
-    app.logger.info("Recommendation with ID: %d delete complete.", recommendation_id)
+    if recommendation:
+        app.logger.info(
+            "Recommendation with ID: %d found. Deleting...", recommendation_id
+        )
+        try:
+            recommendation.delete()
+        except SQLAlchemyError as e:
+            app.logger.error("Database error while deleting: %s", str(e))
+            abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "Database error occurred")
+        except Exception as e:
+            app.logger.error("Unexpected error: %s", str(e))
+            abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "An unexpected error occurred")
+    else:
+        app.logger.info(
+            "Recommendation with ID: %d not found. Returning 204 No Content.",
+            recommendation_id,
+        )
+
     return {}, status.HTTP_204_NO_CONTENT
 
 
