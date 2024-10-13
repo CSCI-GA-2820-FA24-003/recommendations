@@ -24,8 +24,9 @@ import logging
 from unittest import TestCase
 from wsgi import app
 from service.common import status
-from service.models import db, Recommendations
+from service.models import db, Recommendations, DataValidationError
 from .factories import RecommendationsFactory
+from unittest.mock import patch, MagicMock
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -76,7 +77,9 @@ class TestYourResourceService(TestCase):
             test_recommendation = RecommendationsFactory()
             response = self.client.post(BASE_URL, json=test_recommendation.serialize())
             self.assertEqual(
-                response.status_code, status.HTTP_201_CREATED, "Could not create test recommendation"
+                response.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test recommendation",
             )
             new_recommendation = response.get_json()
             test_recommendation.id = new_recommendation["id"]
@@ -132,10 +135,10 @@ class TestYourResourceService(TestCase):
         # )
         # self.assertEqual(new_recommendation["recommendation_type"], test_recommendation.recommendation_type)
 
-
     # ----------------------------------------------------------
     # TEST READ
     # ----------------------------------------------------------
+
     def test_get_recommendation(self):
         """It should Get a single Recommendation"""
         # get the id of a recommendation
@@ -153,10 +156,10 @@ class TestYourResourceService(TestCase):
         logging.debug("Response data = %s", data)
         self.assertIn("was not found", data["message"])
 
-
     # ----------------------------------------------------------
     # TEST DELETE
     # ----------------------------------------------------------
+
     def test_delete_recommendation(self):
         """It should Delete a Recommendation"""
         test_recommendation = self._create_recommendations(1)[0]
@@ -166,8 +169,9 @@ class TestYourResourceService(TestCase):
         # make sure they are deleted
         response = self.client.get(f"{BASE_URL}/{test_recommendation.id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        print(f"Response status code: {response.status_code}, Response data: {response.data}")
-
+        print(
+            f"Response status code: {response.status_code}, Response data: {response.data}"
+        )
 
     def test_delete_non_existing_recommendation(self):
         """It should Delete a Recommendation even if it doesn't exist"""
@@ -175,7 +179,6 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
 
-        
     # ----------------------------------------------------------
     # TEST LIST
     # ----------------------------------------------------------
@@ -186,4 +189,87 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), 5)
+
+
+######################################################################
+#  T E S T   S A D   P A T H S
+######################################################################
+class TestSadPaths(TestCase):
+    """Test REST Exception Handling"""
+
+    def setUp(self):
+        """Runs before each test"""
+        self.client = app.test_client()
+
+    def test_method_not_allowed(self):
+        """It should not allow update without a recommendation id"""
+        response = self.client.put(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_create_recommendation_no_data(self):
+        """It should not Create a Recommendation with missing data"""
+        response = self.client.post(BASE_URL, json={})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_recommendation_no_content_type(self):
+        """It should not Create a Recommendation with no content type"""
+        response = self.client.post(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_create_recommendation_wrong_content_type(self):
+        """It should not Create a Recommendation with the wrong content type"""
+        response = self.client.post(BASE_URL, data="hello", content_type="text/html")
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_create_recommendation_bad_available(self):
+        """It should not Create a Recommendation with bad available data"""
+        test_recommendation = RecommendationsFactory()
+        logging.debug(test_recommendation)
+        # change recommendation_type to a string that is not valid
+        test_recommendation.recommendation_type = "invalid_type"
+        response = self.client.post(BASE_URL, json=test_recommendation.serialize())
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_recommendation_bad_status(self):
+        """It should not Create a Recommendation with bad status data"""
+        recommendation = RecommendationsFactory()
+        logging.debug(recommendation)
+        # change status to a bad string
+        test_recommendation = recommendation.serialize()
+        test_recommendation["status"] = "not_a_status"  # invalid status
+        response = self.client.post(BASE_URL, json=test_recommendation)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_recommendation_missing_product_id(self):
+        """It should not Create a Recommendation with missing product_id"""
+        recommendation = RecommendationsFactory()
+        test_recommendation = recommendation.serialize()
+        del test_recommendation["product_id"]  # delete product_id
+        response = self.client.post(BASE_URL, json=test_recommendation)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_recommendation_missing_recommended_id(self):
+        """It should not Create a Recommendation with missing recommended_id"""
+        recommendation = RecommendationsFactory()
+        test_recommendation = recommendation.serialize()
+        del test_recommendation["recommended_id"]  # delete recommended_id
+        response = self.client.post(BASE_URL, json=test_recommendation)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_recommendation_invalid_product_id(self):
+        """It should not Create a Recommendation with an invalid product_id"""
+        recommendation = RecommendationsFactory()
+        test_recommendation = recommendation.serialize()
+        test_recommendation["product_id"] = "invalid_id"  # not int
+        response = self.client.post(BASE_URL, json=test_recommendation)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_recommendation_invalid_recommended_id(self):
+        """It should not Create a Recommendation with an invalid recommended_id"""
+        recommendation = RecommendationsFactory()
+        test_recommendation = recommendation.serialize()
+        test_recommendation["recommended_id"] = "invalid_id"  # not int
+        response = self.client.post(BASE_URL, json=test_recommendation)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
 

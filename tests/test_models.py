@@ -92,3 +92,29 @@ class TestRecommendations(TestCase):
         # See if we get back 5 recommendations
         recommendations = Recommendations.all()
         self.assertEqual(len(recommendations), 5)
+        
+    def test_read_a_recommendation(self):
+        """It should Read a Recommendation"""
+        recommendation = RecommendationsFactory()
+        logging.debug(recommendation)
+        recommendation.id = None
+        recommendation.create()
+        self.assertIsNotNone(recommendation.id)
+        # Fetch it back
+        found_recommendation = Recommendations.find(recommendation.id)
+        self.assertEqual(found_recommendation.id, recommendation.id)
+        self.assertEqual(found_recommendation.product_id, recommendation.product_id)
+        self.assertEqual(found_recommendation.recommended_id, recommendation.recommended_id)
+        self.assertEqual(found_recommendation.recommendation_type, recommendation.recommendation_type)
+        self.assertEqual(found_recommendation.status, recommendation.status)
+        self.assertEqual(found_recommendation.created_at, recommendation.created_at)
+        self.assertEqual(found_recommendation.last_updated, recommendation.last_updated)
+        
+    def test_delete_a_recommendation(self):
+        """It should Delete a Recommendation"""
+        recommendation = RecommendationsFactory()
+        recommendation.create()
+        self.assertEqual(len(Recommendations.all()), 1)
+        # delete the recommendation and make sure it isn't in the database
+        recommendation.delete()
+        self.assertEqual(len(Recommendations.all()), 0)
