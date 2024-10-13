@@ -21,10 +21,13 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Recommendations
 """
 
-from flask import jsonify, request, url_for, abort
+from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import BadRequest
 from service.models import Recommendations
 from service.common import status  # HTTP Status Codes
+from service.models import DataValidationError
 
 
 ######################################################################
@@ -118,12 +121,17 @@ def get_recommendations(recommendation_id):
 
     This endpoint will return a Recommendation based on it's id
     """
-    app.logger.info("Request to Retrieve a recommendation with id [%s]", recommendation_id)
+    app.logger.info(
+        "Request to Retrieve a recommendation with id [%s]", recommendation_id
+    )
 
     # Attempt to find the Recommendation and abort if not found
     recommendation = Recommendations.find(recommendation_id)
     if not recommendation:
-        abort(status.HTTP_404_NOT_FOUND, f"Recommendation with id '{recommendation_id}' was not found.")
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Recommendation with id '{recommendation_id}' was not found.",
+        )
 
     app.logger.info("Returning recommendation: %s", recommendation.id)
     return jsonify(recommendation.serialize()), status.HTTP_200_OK
@@ -139,7 +147,9 @@ def delete_recommendations(recommendation_id):
 
     This endpoint will delete a Recommendation based the id specified in the path
     """
-    app.logger.info("Request to Delete a recommendation with id [%s]", recommendation_id)
+    app.logger.info(
+        "Request to Delete a recommendation with id [%s]", recommendation_id
+    )
 
     # Delete the Recommendation if it exists
     recommendation = Recommendations.find(recommendation_id)
@@ -149,6 +159,61 @@ def delete_recommendations(recommendation_id):
 
     app.logger.info("Recommendation with ID: %d delete complete.", recommendation_id)
     return {}, status.HTTP_204_NO_CONTENT
+
+
+######################################################################
+# UPDATE A RECOMMENDATION
+######################################################################
+@app.route("/recommendations/<int:recommendation_id>", methods=["PUT"])
+def update_recommendations(recommendation_id):
+    """
+    Update a Recommendation
+
+    This endpoint will update a Recommendation based on the posted data
+    """
+    app.logger.info(
+        "Request to Update a recommendation with id [%s]", recommendation_id
+    )
+    check_content_type("application/json")
+
+    # Find the recommendation by id
+    recommendation = Recommendations.find(recommendation_id)
+    if not recommendation:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Recommendation with id '{recommendation_id}' was not found.",
+        )
+
+    # Get the data from the request and handle malformed JSON
+    try:
+        data = request.get_json()
+    except BadRequest as e:
+        app.logger.error("Invalid JSON format: %s", str(e))
+        abort(status.HTTP_400_BAD_REQUEST, "Invalid JSON format")
+
+    app.logger.info("Processing update for recommendation: %s", data)
+
+    try:
+        # Deserialize and update the recommendation
+        recommendation.deserialize(data)
+        recommendation.update()
+    except DataValidationError as e:
+        # Handle concurrent modification or other validation errors
+        app.logger.error("Data validation error: %s", str(e))
+        if "updated by another process" in str(e):
+            abort(
+                status.HTTP_409_CONFLICT, "The record was updated by another process."
+            )
+        abort(status.HTTP_400_BAD_REQUEST, str(e))
+    except SQLAlchemyError as e:
+        app.logger.error("Database error: %s", str(e))
+        abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal server error")
+    except Exception as e:
+        app.logger.error("Unexpected error: %s", str(e))
+        abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "An unexpected error occurred")
+
+    app.logger.info("Recommendation with id [%s] updated!", recommendation.id)
+    return jsonify(recommendation.serialize()), status.HTTP_200_OK
 
 
 ######################################################################
