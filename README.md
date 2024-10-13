@@ -1,13 +1,11 @@
-# NYU DevOps Project Template
+# Recommendations Microservice
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 
-This is a skeleton you can use to start your projects
-
 ## Overview
 
-This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
+This project is about the recommendations service from an eCommerce website. The recommendations service is a representation a product recommendation based on another product. The `/service` folder contains the `models.py` file for the model and a `routes.py` file for the service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add the functionality.
 
 ## Automatic Setup
 
@@ -57,6 +55,54 @@ tests/                     - test cases package
 ├── test_models.py         - test suite for business models
 └── test_routes.py         - test suite for service routes
 ```
+
+## Base URL
+
+`/recommendations`
+
+## Database Model
+
+The `Recommendations` table schema contains the following fields:
+
+| Field             | Type                                      | Description                                                  |
+|-------------------|-------------------------------------------|--------------------------------------------------------------|
+| `id`              | `Integer`                                 | Unique ID for each recommendation (Primary Key)               |
+| `product_id`      | `Integer`                                 | ID of the product                                             |
+| `recommended_id`  | `Integer`                                 | ID of the recommended product                                 |
+| `recommendation_type` | `Enum` ("cross-sell", "up-sell", "accessory") | Type of recommendation: cross-sell, up-sell, or accessory     |
+| `status`          | `Enum` ("active", "expired", "draft")     | Status of the recommendation                                  |
+| `created_at`      | `DateTime`                                | Timestamp when the recommendation was created                 |
+| `last_updated`    | `DateTime`                                | Timestamp when the recommendation was last updated            |
+
+## API Endpoints
+
+| Method | Endpoint                                    | Description                              | Parameters                                  | Example Response                                                 |
+|--------|---------------------------------------------|------------------------------------------|--------------------------------------------|------------------------------------------------------------------|
+| GET    | `/recommendations`                          | List all recommendations                 | `product_id` (optional), `recommended_id` (optional) | `[ { "id": 1, "product_id": 101, "recommended_id": 202, "recommendation_type": "cross-sell", "status": "active" }, ... ]` |
+| POST   | `/recommendations`                          | Create a new recommendation              | JSON body with `product_id`, `recommended_id`, `recommendation_type`, `status` | `{ "id": 1, "product_id": 101, "recommended_id": 202, "recommendation_type": "cross-sell", "status": "active" }`          |
+| GET    | `/recommendations/<int:recommendation_id>`  | Retrieve a single recommendation by ID   | `recommendation_id` (required)             | `{ "id": 1, "product_id": 101, "recommended_id": 202, "recommendation_type": "cross-sell", "status": "active" }`          |
+| PUT    | `/recommendations/<int:recommendation_id>`  | Update an existing recommendation by ID  | `recommendation_id` (required), JSON body with updated fields | `{ "id": 1, "product_id": 101, "recommended_id": 303, "recommendation_type": "up-sell", "status": "expired" }`          |
+| DELETE | `/recommendations/<int:recommendation_id>`  | Delete a recommendation by ID            | `recommendation_id` (required)             | `{}` (empty response, status code 204)                           |
+
+## Data Model Example
+
+A `Recommendations` object is represented as follows:
+
+```json
+{
+  "id": 1,
+  "product_id": 101,
+  "recommended_id": 202,
+  "recommendation_type": "cross-sell",
+  "status": "active",
+  "created_at": "2024-10-13T12:00:00Z",
+  "last_updated": "2024-10-13T15:00:00Z"
+}
+```
+
+## Tests
+
+The current unit test code coverage is `95.82%` (last updated ). To test the microservice, run `make test`.
 
 ## License
 
