@@ -156,6 +156,29 @@ class TestYourResourceService(TestCase):
         self.assertIn("was not found", data["message"])
 
     # ----------------------------------------------------------
+
+    # TEST DELETE
+    # ----------------------------------------------------------
+    def test_delete_recommendation(self):
+        """It should Delete a Recommendation"""
+        test_recommendation = self._create_recommendations(1)[0]
+        response = self.client.delete(f"{BASE_URL}/{test_recommendation.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+        # make sure they are deleted
+        response = self.client.get(f"{BASE_URL}/{test_recommendation.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        print(
+            f"Response status code: {response.status_code}, Response data: {response.data}"
+        )
+
+    def test_delete_non_existing_recommendation(self):
+        """It should Delete a Recommendation even if it doesn't exist"""
+        response = self.client.delete(f"{BASE_URL}/0")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+
+    # ----------------------------------------------------------
     # TEST LIST
     # ----------------------------------------------------------
     def test_get_recommendation_list(self):
