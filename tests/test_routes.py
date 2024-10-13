@@ -204,6 +204,7 @@ class TestYourResourceService(TestCase):
     # ----------------------------------------------------------
     # TEST READ
     # ----------------------------------------------------------
+
     def test_get_recommendation(self):
         """It should Get a single Recommendation"""
         # get the id of a recommendation
@@ -222,6 +223,7 @@ class TestYourResourceService(TestCase):
         self.assertIn("was not found", data["message"])
 
     # ----------------------------------------------------------
+
     # TEST DELETE
     # ----------------------------------------------------------
     def test_delete_recommendation(self):
@@ -242,6 +244,7 @@ class TestYourResourceService(TestCase):
         response = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
+
 
     def test_delete_recommendation_db_error(self):
         """It should return 500 Internal Server Error when a database error occurs during delete"""
