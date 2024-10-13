@@ -68,6 +68,7 @@ class TestYourResourceService(TestCase):
     ############################################################
     # Utility function to bulk create recommendations
     ############################################################
+
     def _create_recommendations(self, count: int = 1) -> list:
         """Factory method to create recommendations in bulk"""
         recommendations = []
@@ -83,7 +84,7 @@ class TestYourResourceService(TestCase):
         return recommendations
 
     ######################################################################
-    #  P L A C E   T E S T   C A S E S   H E R E
+    # T E S T   C A S E S
     ######################################################################
 
     def test_index(self):
@@ -173,3 +174,16 @@ class TestYourResourceService(TestCase):
         response = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
+
+        
+    # ----------------------------------------------------------
+    # TEST LIST
+    # ----------------------------------------------------------
+    def test_get_recommendation_list(self):
+        """It should Get a list of recommendations"""
+        self._create_recommendations(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
+
