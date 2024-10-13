@@ -26,6 +26,8 @@ from wsgi import app
 from service.common import status
 from service.models import db, Recommendations
 from .factories import RecommendationsFactory
+from unittest.mock import patch
+from sqlalchemy.exc import SQLAlchemyError
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -121,6 +123,71 @@ class TestYourResourceService(TestCase):
             test_recommendation.recommendation_type,
         )
 
+    def test_create_recommendation_data_validation_error(self):
+        """It should return 400 Bad Request when data validation fails"""
+        # Simulate invalid data that will trigger a DataValidationError
+        invalid_data = {
+            "product_id": "invalid",  # Non-integer value for product_id
+            "recommended_id": 101,
+            "recommendation_type": "up-sell",
+        }
+
+        # Send POST request with invalid data
+        response = self.client.post(BASE_URL, json=invalid_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Check the actual error message
+        data = response.get_json()
+        self.assertIn("Invalid product_id: must be a positive integer", data["message"])
+
+    def test_create_recommendation_db_error(self):
+        """It should return 500 Internal Server Error when the database fails"""
+        # Simulate a SQLAlchemyError during the database interaction
+        test_recommendation = RecommendationsFactory()
+        with patch(
+            "service.models.Recommendations.create",
+            side_effect=SQLAlchemyError("Database error"),
+        ):
+            response = self.client.post(BASE_URL, json=test_recommendation.serialize())
+            self.assertEqual(
+                response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+            # Check that the error message is correct
+            data = response.get_json()
+            self.assertIn("Database error occurred", data["message"])
+
+    def test_create_recommendation_missing_content_type(self):
+        """It should return 415 Unsupported Media Type when Content-Type is missing"""
+        test_recommendation = RecommendationsFactory()
+        response = self.client.post(BASE_URL, data=test_recommendation.serialize())
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+        data = response.get_json()
+        self.assertIn("Content-Type must be application/json", data["message"])
+
+    def test_create_recommendation_invalid_content_type(self):
+        """It should return 415 Unsupported Media Type when Content-Type is invalid"""
+        test_recommendation = RecommendationsFactory()
+        response = self.client.post(
+            BASE_URL, data=test_recommendation.serialize(), content_type="text/plain"
+        )
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+        data = response.get_json()
+        self.assertIn("Content-Type must be application/json", data["message"])
+
+    def test_create_recommendation_unexpected_error(self):
+        """It should return 500 Internal Server Error when an unexpected error occurs"""
+        # Simulate unexpected error by raising an exception in the create() method
+        test_recommendation = RecommendationsFactory()
+        original_create = Recommendations.create
+        Recommendations.create = lambda self: (_ for _ in ()).throw(
+            Exception("Unexpected error")
+        )
+
+        response = self.client.post(BASE_URL, json=test_recommendation.serialize())
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        Recommendations.create = original_create
+
         # Todo: uncomment this code when get_recommendations is implemented
         # # Check that the location header was correct
         # response = self.client.get(location)
@@ -176,6 +243,42 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
 
+    def test_delete_recommendation_db_error(self):
+        """It should return 500 Internal Server Error when a database error occurs during delete"""
+        test_recommendation = self._create_recommendations(1)[0]
+
+        # Simulate a SQLAlchemyError during the delete process
+        with patch(
+            "service.models.Recommendations.delete",
+            side_effect=SQLAlchemyError("Database error"),
+        ):
+            response = self.client.delete(f"{BASE_URL}/{test_recommendation.id}")
+            self.assertEqual(
+                response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+            # Check that the correct error message is returned
+            data = response.get_json()
+            self.assertIn("Database error occurred", data["message"])
+
+    def test_delete_recommendation_unexpected_error(self):
+        """It should return 500 Internal Server Error when an unexpected error occurs during delete"""
+        test_recommendation = self._create_recommendations(1)[0]
+
+        # Simulate a generic Exception during the delete process
+        with patch(
+            "service.models.Recommendations.delete",
+            side_effect=Exception("Unexpected error"),
+        ):
+            response = self.client.delete(f"{BASE_URL}/{test_recommendation.id}")
+            self.assertEqual(
+                response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+            # Check that the correct error message is returned
+            data = response.get_json()
+            self.assertIn("An unexpected error occurred", data["message"])
+
     # ----------------------------------------------------------
     # TEST LIST
     # ----------------------------------------------------------
@@ -186,6 +289,43 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), 5)
+
+    def test_get_all_recommendations(self):
+        """It should get all recommendations without filtering by product_id or recommended_id"""
+        self._create_recommendations(3)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 3)
+
+    def test_list_recommendations_invalid_product_id(self):
+        """It should not list recommendations with an invalid product_id"""
+        response = self.client.get(f"{BASE_URL}?product_id=invalid")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Invalid product_id", data["message"])
+
+    def test_list_recommendations_invalid_recommended_id(self):
+        """It should not list recommendations with an invalid recommended_id"""
+        response = self.client.get(f"{BASE_URL}?recommended_id=invalid")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Invalid recommended_id", data["message"])
+
+    def test_list_recommendations_by_product_id(self):
+        """It should List recommendations by product_id"""
+        # Create a recommendation with a specific product_id
+        test_recommendation = self._create_recommendations(1)[0]
+        product_id = test_recommendation.product_id
+
+        # Send request to list recommendations by product_id
+        response = self.client.get(f"{BASE_URL}?product_id={product_id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check that the response contains the correct recommendation
+        data = response.get_json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["product_id"], product_id)
 
     # ----------------------------------------------------------
     # TEST UPDATE - Successfully update a recommendation
@@ -398,3 +538,81 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
         self.assertIn("Invalid JSON format", data["message"])
+
+    def test_update_recommendation_malformed_json(self):
+        """It should return 400 Bad Request for malformed JSON in update"""
+        test_recommendation = self._create_recommendations(1)[0]
+        invalid_json = '{"product_id": 1, "recommended_id": 101, "status": "active"'  # Missing closing brace
+
+        response = self.client.put(
+            f"{BASE_URL}/{test_recommendation.id}",
+            data=invalid_json,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Invalid JSON format", data["message"])
+
+    def test_check_content_type_invalid(self):
+        """It should return 415 Unsupported Media Type when Content-Type is invalid"""
+        test_recommendation = RecommendationsFactory()
+        response = self.client.post(
+            BASE_URL, data=test_recommendation.serialize(), content_type="text/plain"
+        )
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+        data = response.get_json()
+        self.assertIn("Content-Type must be application/json", data["message"])
+
+    def test_update_recommendation_db_error(self):
+        """It should return 500 Internal Server Error when a database error occurs during update"""
+        # Create a recommendation to update
+        test_recommendation = self._create_recommendations(1)[0]
+
+        # Simulate a SQLAlchemyError during the update process
+        with patch(
+            "service.models.Recommendations.update",
+            side_effect=SQLAlchemyError("Database error"),
+        ):
+            new_data = {
+                "product_id": test_recommendation.product_id + 1,
+                "recommended_id": test_recommendation.recommended_id + 1,
+                "status": "expired",
+                "recommendation_type": "up-sell",
+            }
+            response = self.client.put(
+                f"{BASE_URL}/{test_recommendation.id}", json=new_data
+            )
+            self.assertEqual(
+                response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+            # Check that the correct error message is returned
+            data = response.get_json()
+            self.assertIn("Internal server error", data["message"])
+
+    def test_update_recommendation_unexpected_error(self):
+        """It should return 500 Internal Server Error when an unexpected error occurs during update"""
+        # Create a recommendation to update
+        test_recommendation = self._create_recommendations(1)[0]
+
+        # Simulate a generic Exception during the update process
+        with patch(
+            "service.models.Recommendations.update",
+            side_effect=Exception("Unexpected error"),
+        ):
+            new_data = {
+                "product_id": test_recommendation.product_id + 1,
+                "recommended_id": test_recommendation.recommended_id + 1,
+                "status": "expired",
+                "recommendation_type": "up-sell",
+            }
+            response = self.client.put(
+                f"{BASE_URL}/{test_recommendation.id}", json=new_data
+            )
+            self.assertEqual(
+                response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+            # Check that the correct error message is returned
+            data = response.get_json()
+            self.assertIn("An unexpected error occurred", data["message"])
