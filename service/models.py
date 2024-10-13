@@ -68,7 +68,7 @@ class Recommendations(db.Model):
 
     def update(self):
         """
-        Updates a Recommendation in the database
+        Updates a Recommendation in the database, ensuring no concurrent modifications
         """
         logger.info(
             "Updating recommendation: product_id=%s, recommended_id=%s",
@@ -76,7 +76,16 @@ class Recommendations(db.Model):
             self.recommended_id,
         )
         try:
+            # Ensure the record hasn't been updated by another process
+            current = Recommendations.find(self.id)
+            if current and current.last_updated != self.last_updated:
+                raise DataValidationError("The record was updated by another process.")
+
             db.session.commit()
+        except DataValidationError as e:
+            db.session.rollback()
+            logger.error("Data validation error: %s", str(e))
+            raise
         except Exception as e:
             db.session.rollback()
             logger.error(
@@ -114,31 +123,61 @@ class Recommendations(db.Model):
             "recommended_id": self.recommended_id,
             "recommendation_type": self.recommendation_type,
             "status": self.status,
+            "last_updated": self.last_updated,
         }
 
     def deserialize(self, data):
-        """
-        Deserializes a Recommendations from a dictionary
-
-        Args:
-            data (dict): A dictionary containing the resource data
-        """
         try:
-            self.product_id = data["product_id"]
-            self.recommended_id = data["recommended_id"]
-            self.recommendation_type = data["recommendation_type"]
-            self.status = data["status"]
+            # Validate product_id only if it is present
+            if "product_id" in data:
+                if not isinstance(data["product_id"], int) or data["product_id"] <= 0:
+                    raise DataValidationError(
+                        "Invalid product_id: must be a positive integer"
+                    )
+                self.product_id = data["product_id"]
+
+            # Validate recommended_id only if it is present
+            if "recommended_id" in data:
+                if (
+                    not isinstance(data["recommended_id"], int)
+                    or data["recommended_id"] <= 0
+                ):
+                    raise DataValidationError(
+                        "Invalid recommended_id: must be a positive integer"
+                    )
+                self.recommended_id = data["recommended_id"]
+
+            # Validate recommendation_type only if it is present
+            if "recommendation_type" in data:
+                if data["recommendation_type"] not in [
+                    "cross-sell",
+                    "up-sell",
+                    "accessory",
+                ]:
+                    raise DataValidationError(
+                        "Invalid recommendation_type: must be one of ['cross-sell', 'up-sell', 'accessory']"
+                    )
+                self.recommendation_type = data["recommendation_type"]
+
+            # Validate status only if it is present
+            if "status" in data:
+                if data["status"] not in ["active", "expired", "draft"]:
+                    raise DataValidationError(
+                        "Invalid status: must be one of ['active', 'expired', 'draft']"
+                    )
+                self.status = data["status"]
+
         except AttributeError as error:
-            raise DataValidationError("Invalid attribute: " + error.args[0]) from error
+            raise DataValidationError(f"Invalid attribute: {error.args[0]}") from error
         except KeyError as error:
             raise DataValidationError(
-                "Invalid Recommendations: missing " + error.args[0]
+                f"Invalid Recommendations: missing {error.args[0]}"
             ) from error
         except TypeError as error:
             raise DataValidationError(
-                "Invalid Recommendations: body of request contained bad or no data "
-                + str(error)
+                f"Invalid Recommendations: body of request contained bad or no data. {str(error)}"
             ) from error
+
         return self
 
     ##################################################

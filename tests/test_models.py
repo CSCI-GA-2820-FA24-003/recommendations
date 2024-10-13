@@ -23,7 +23,7 @@ import os
 import logging
 from unittest import TestCase
 from wsgi import app
-from service.models import Recommendations, DataValidationError, db
+from service.models import Recommendations, db
 from .factories import RecommendationsFactory
 
 DATABASE_URI = os.getenv(
