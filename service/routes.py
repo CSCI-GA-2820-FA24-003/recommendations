@@ -21,7 +21,7 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Recommendations
 """
 
-from flask import jsonify, request, abort
+from flask import jsonify, request, abort, url_for
 from flask import current_app as app  # Import Flask application
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import BadRequest
@@ -36,8 +36,13 @@ from service.models import DataValidationError
 @app.route("/")
 def index():
     """Root URL response"""
+    app.logger.info("Request for Root URL")
     return (
-        "Reminder: return some useful information in json format about the service here",
+        jsonify(
+            name="Recommendation REST API Service",
+            version="1.0",
+            paths=url_for("list_recommendations", _external=True),
+        ),
         status.HTTP_200_OK,
     )
 
