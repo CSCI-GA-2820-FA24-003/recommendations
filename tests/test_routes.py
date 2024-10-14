@@ -91,10 +91,16 @@ class TestYourResourceService(TestCase):
     # T E S T   C A S E S
     ######################################################################
 
+    # ----------------------------------------------------------
+    # TEST ROOT ROUTE
+    # ----------------------------------------------------------
     def test_index(self):
         """It should call the home page"""
-        resp = self.client.get("/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["name"], "Recommendation REST API Service")
+        self.assertEqual(data["version"], "1.0")
 
     # ----------------------------------------------------------
     # TEST CREATE
@@ -244,7 +250,6 @@ class TestYourResourceService(TestCase):
         response = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
-
 
     def test_delete_recommendation_db_error(self):
         """It should return 500 Internal Server Error when a database error occurs during delete"""

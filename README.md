@@ -102,7 +102,7 @@ A `Recommendations` object is represented as follows:
 
 ## Tests
 
-The current unit test code coverage is `95.82%` (last updated ). To test the microservice, run `make test`.
+The current unit test code coverage is `95.83%` (last updated 10/14/2024). To test the microservice, run `make test`.
 
 ## License
 
