@@ -22,19 +22,21 @@ class Recommendations(db.Model):
     Class that represents a Recommendations
     """
 
+    # pylint: disable=too-many-instance-attributes
+
     ##################################################
     # Table Schema
     ##################################################
     id = db.Column(db.Integer, primary_key=True)  # Unique ID for each recommendation
-    product_id = db.Column(db.Integer, nullable=False)  # ID of the basic product
-    recommended_id = db.Column(
+    _product_id = db.Column(db.Integer, nullable=False)  # ID of the basic product
+    _recommended_id = db.Column(
         db.Integer, nullable=False
     )  # ID of the recommended product
-    recommendation_type = db.Column(
+    _recommendation_type = db.Column(
         db.Enum("cross-sell", "up-sell", "accessory", name="recommendation_type"),
         nullable=False,
     )  # Type of recommendation (cross-sell, up-sell, accessory)
-    status = db.Column(
+    _status = db.Column(
         db.Enum("active", "expired", "draft", name="status"), nullable=False
     )  # Status of the recommendation
     # Database auditing fields
@@ -42,6 +44,62 @@ class Recommendations(db.Model):
     last_updated = db.Column(
         db.DateTime, default=db.func.now(), onupdate=db.func.now(), nullable=False
     )
+
+    @property
+    def product_id(self):
+        """This property provides access to the product id."""
+        return self._product_id
+
+    @product_id.setter
+    def product_id(self, value):
+        """This setter validates and updates the product id."""
+        if not isinstance(value, int):
+            raise TypeError("The product_id must be an integer")
+        if value <= 0:
+            raise ValueError("The product_id must be a positive number")
+        self._product_id = value
+
+    @property
+    def recommended_id(self):
+        """This property provides access to the recommended id."""
+        return self._recommended_id
+
+    @recommended_id.setter
+    def recommended_id(self, value):
+        """This setter validates and updates the recommended id."""
+        if not isinstance(value, int):
+            raise TypeError("The recommended_id must be an integer")
+        if value <= 0:
+            raise ValueError("The recommended_id must be a positive number")
+        self._recommended_id = value
+
+    @property
+    def recommendation_type(self):
+        """This property provides access to the recommendation type."""
+        return self._recommendation_type
+
+    @recommendation_type.setter
+    def recommendation_type(self, value):
+        """This setter validates and updates the recommendation type."""
+        if value not in ["cross-sell", "up-sell", "accessory"]:
+            raise DataValidationError(
+                "Invalid recommendation_type: must be one of ['cross-sell', 'up-sell', 'accessory']"
+            )
+        self._recommendation_type = value
+
+    @property
+    def status(self):
+        """This property provides access to the status."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        """This setter validates and updates the status."""
+        if value not in ["active", "expired", "draft"]:
+            raise DataValidationError(
+                "Invalid status: must be one of ['active', 'expired', 'draft']"
+            )
+        self._status = value
 
     def __repr__(self):
         return f"<Recommendation id=[{self.id}] product_id=[{self.product_id}] recommended_id=[{self.recommended_id}]>"
@@ -116,7 +174,7 @@ class Recommendations(db.Model):
             raise DataValidationError(e) from e
 
     def serialize(self):
-        """Serializes a Recommendations into a dictionary"""
+        """Serializes a Recommendation into a dictionary"""
         return {
             "id": self.id,
             "product_id": self.product_id,
@@ -124,49 +182,16 @@ class Recommendations(db.Model):
             "recommendation_type": self.recommendation_type,
             "status": self.status,
             "last_updated": self.last_updated,
+            "created_at": self.created_at,
         }
 
     def deserialize(self, data):
+        """Deserialize a Recommendation from a dictionary"""
         try:
-            # Validate product_id only if it is present
-            if "product_id" in data:
-                if not isinstance(data["product_id"], int) or data["product_id"] <= 0:
-                    raise DataValidationError(
-                        "Invalid product_id: must be a positive integer"
-                    )
-                self.product_id = data["product_id"]
-
-            # Validate recommended_id only if it is present
-            if "recommended_id" in data:
-                if (
-                    not isinstance(data["recommended_id"], int)
-                    or data["recommended_id"] <= 0
-                ):
-                    raise DataValidationError(
-                        "Invalid recommended_id: must be a positive integer"
-                    )
-                self.recommended_id = data["recommended_id"]
-
-            # Validate recommendation_type only if it is present
-            if "recommendation_type" in data:
-                if data["recommendation_type"] not in [
-                    "cross-sell",
-                    "up-sell",
-                    "accessory",
-                ]:
-                    raise DataValidationError(
-                        "Invalid recommendation_type: must be one of ['cross-sell', 'up-sell', 'accessory']"
-                    )
-                self.recommendation_type = data["recommendation_type"]
-
-            # Validate status only if it is present
-            if "status" in data:
-                if data["status"] not in ["active", "expired", "draft"]:
-                    raise DataValidationError(
-                        "Invalid status: must be one of ['active', 'expired', 'draft']"
-                    )
-                self.status = data["status"]
-
+            self.product_id = data["product_id"]
+            self.recommended_id = data["recommended_id"]
+            self.recommendation_type = data["recommendation_type"]
+            self.status = data["status"]
         except AttributeError as error:
             raise DataValidationError(f"Invalid attribute: {error.args[0]}") from error
         except KeyError as error:
