@@ -28,16 +28,19 @@ class Recommendations(db.Model):
     # Table Schema
     ##################################################
     id = db.Column(db.Integer, primary_key=True)  # Unique ID for each recommendation
-    _product_id = db.Column(db.Integer, nullable=False)  # ID of the basic product
+    _product_id = db.Column(
+        "product_id", db.Integer, nullable=False
+    )  # ID of the basic product
     _recommended_id = db.Column(
-        db.Integer, nullable=False
+        "recommended_id", db.Integer, nullable=False
     )  # ID of the recommended product
     _recommendation_type = db.Column(
+        "recommendation_type",
         db.Enum("cross-sell", "up-sell", "accessory", name="recommendation_type"),
         nullable=False,
     )  # Type of recommendation (cross-sell, up-sell, accessory)
     _status = db.Column(
-        db.Enum("active", "expired", "draft", name="status"), nullable=False
+        "status", db.Enum("active", "expired", "draft", name="status"), nullable=False
     )  # Status of the recommendation
     # Database auditing fields
     created_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
@@ -54,9 +57,9 @@ class Recommendations(db.Model):
     def product_id(self, value):
         """This setter validates and updates the product id."""
         if not isinstance(value, int):
-            raise TypeError("The product_id must be an integer")
+            raise DataValidationError("Invalid product_id: must be an integer")
         if value <= 0:
-            raise ValueError("The product_id must be a positive number")
+            raise DataValidationError("Invalid product_id: must be a positive number")
         self._product_id = value
 
     @property
@@ -68,9 +71,11 @@ class Recommendations(db.Model):
     def recommended_id(self, value):
         """This setter validates and updates the recommended id."""
         if not isinstance(value, int):
-            raise TypeError("The recommended_id must be an integer")
+            raise DataValidationError("Invalid recommended_id: must be an integer")
         if value <= 0:
-            raise ValueError("The recommended_id must be a positive number")
+            raise DataValidationError(
+                "Invalid recommended_id: must be a positive number"
+            )
         self._recommended_id = value
 
     @property
@@ -229,7 +234,7 @@ class Recommendations(db.Model):
             product_id (int): the ID of the product you want to match
         """
         logger.info("Processing product_id query for %s ...", product_id)
-        return cls.query.filter(cls.product_id == product_id).all()
+        return cls.query.filter(cls._product_id == product_id).all()
 
     @classmethod
     def find_by_recommended_id(cls, recommended_id):
@@ -239,4 +244,4 @@ class Recommendations(db.Model):
             recommended_id (int): the ID of the recommended product you want to match
         """
         logger.info("Processing recommended_id query for %s ...", recommended_id)
-        return cls.query.filter(cls.recommended_id == recommended_id).all()
+        return cls.query.filter(cls._recommended_id == recommended_id).all()
