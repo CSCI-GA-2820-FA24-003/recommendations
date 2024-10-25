@@ -179,9 +179,7 @@ class TestRecommendations(TestCase):
         recommendation1.create()
         print(recommendation1)
         self._create_recommendations(2)
-        print(Recommendations.all())
         recommendations = Recommendations.find_by_product_id(1)
-        print(recommendations)
         self.assertGreaterEqual(len(recommendations), 0)
         self.assertEqual(recommendations[0].product_id, 1)
 
