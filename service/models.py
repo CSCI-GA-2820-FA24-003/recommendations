@@ -110,6 +110,9 @@ class Recommendations(db.Model):
         return f"<Recommendation id=[{self.id}] product_id=[{self.product_id}] recommended_id=[{self.recommended_id}]>"
 
     def create(self):
+        """
+        Saves a Recommendation to the database
+        """
         logger.info(
             "Creating recommendation: product_id=%s, recommended_id=%s",
             self.product_id,
@@ -160,6 +163,9 @@ class Recommendations(db.Model):
             raise DataValidationError(e) from e
 
     def delete(self):
+        """
+        Removes a Recommendation from the database
+        """
         logger.info(
             "Deleting recommendation: product_id=%s, recommended_id=%s",
             self.product_id,

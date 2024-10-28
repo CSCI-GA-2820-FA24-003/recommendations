@@ -22,11 +22,10 @@ Test cases for recommendation Model
 import os
 import logging
 from unittest import TestCase
-from wsgi import app
-from service.models import Recommendations, db
-from .factories import RecommendationsFactory
-from service.models import DataValidationError
 from unittest.mock import patch
+from service.models import DataValidationError, Recommendations, db
+from wsgi import app
+from .factories import RecommendationsFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -83,7 +82,7 @@ class TestRecommendations(TestCase):
             f"recommended_id=[{recommendation.recommended_id}]>"
         )
 
-        self.assertEqual(recommendation.__repr__(), expected_repr)
+        self.assertEqual(repr(recommendation), expected_repr)
 
     def test_create_recommendation(self):
         """It should Create a recommendation and assert that it exists"""

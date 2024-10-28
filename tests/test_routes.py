@@ -22,12 +22,12 @@ TestRecommendations API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+from unittest.mock import patch
+from sqlalchemy.exc import SQLAlchemyError
 from wsgi import app
 from service.common import status
 from service.models import db, Recommendations
 from .factories import RecommendationsFactory
-from unittest.mock import patch
-from sqlalchemy.exc import SQLAlchemyError
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
