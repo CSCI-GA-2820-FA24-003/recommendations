@@ -72,18 +72,18 @@ def list_recommendations():
         try:
             product_id = int(product_id)
             recommendations = Recommendations.find_by_product_id(product_id)
-        except ValueError:
+        except ValueError as exc:
             app.logger.error("Invalid product_id")
-            raise BadRequest("Invalid product_id: must be an integer")
+            raise BadRequest("Invalid product_id: must be an integer") from exc
     elif recommended_id:
         app.logger.info("Find by recommended_id: %s", recommended_id)
         # Validate recommended_id is an integer
         try:
             recommended_id = int(recommended_id)
             recommendations = Recommendations.find_by_recommended_id(recommended_id)
-        except ValueError:
+        except ValueError as exc:
             app.logger.error("Invalid recommended_id")
-            raise BadRequest("Invalid recommended_id: must be an integer")
+            raise BadRequest("Invalid recommended_id: must be an integer") from exc
     else:
         app.logger.info("Find all")
         recommendations = Recommendations.all()
@@ -120,18 +120,17 @@ def create_recommendations():
     except SQLAlchemyError as e:
         app.logger.error("Database error: %s", str(e))
         abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "Database error occurred")
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         app.logger.error("Unexpected error: %s", str(e))
         abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "An unexpected error occurred")
 
     app.logger.info("Recommendation with new id [%s] saved!", recommendation.id)
 
-    # Todo: uncomment this code when get_recommendations is implemented
     # Return the location of the new Recommendation
-    # location_url = url_for(
-    #     "get_recommendations", recommendation_id=recommendation.id, _external=True
-    # )
-    location_url = "/"
+    location_url = url_for(
+        "get_recommendations", recommendation_id=recommendation.id, _external=True
+    )
+    # location_url = "/"
     return (
         jsonify(recommendation.serialize()),
         status.HTTP_201_CREATED,
@@ -190,7 +189,7 @@ def delete_recommendations(recommendation_id):
         except SQLAlchemyError as e:
             app.logger.error("Database error while deleting: %s", str(e))
             abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "Database error occurred")
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             app.logger.error("Unexpected error: %s", str(e))
             abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "An unexpected error occurred")
     else:
@@ -249,7 +248,7 @@ def update_recommendations(recommendation_id):
     except SQLAlchemyError as e:
         app.logger.error("Database error: %s", str(e))
         abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal server error")
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         app.logger.error("Unexpected error: %s", str(e))
         abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "An unexpected error occurred")
 
