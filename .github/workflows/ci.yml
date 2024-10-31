@@ -54,4 +54,4 @@ jobs:
       - name: Run unit tests with PyTest
         run: pytest --pspec --cov=service --cov-report=xml --cov-fail-under=95
         env:
-          DATABASE_URI: "postgresql://postgres:pgs3cr3t@localhost:5432/testdb"
+          DATABASE_URI: "postgresql+psycopg://postgres:pgs3cr3t@postgres:5432/testdb"
