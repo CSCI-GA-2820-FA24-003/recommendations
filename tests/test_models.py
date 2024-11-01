@@ -21,6 +21,7 @@ Test cases for recommendation Model
 # pylint: disable=duplicate-code
 import os
 import logging
+from datetime import datetime, timedelta
 from unittest import TestCase
 from unittest.mock import patch
 from service.models import DataValidationError, Recommendations, db
@@ -270,3 +271,146 @@ class TestRecommendations(TestCase):
         ):
             with self.assertRaises(DataValidationError):
                 recommendation.update()
+
+    ######################################################################
+    #  Test Cases for find_by_filters Method
+    ######################################################################
+
+    def test_find_by_filters_with_single_condition(self):
+        """It should return recommendations matching a single condition"""
+        recommendation = RecommendationsFactory(product_id=1)
+        recommendation.create()
+        self._create_recommendations(2)  # Create other recommendations
+
+        # Pass a single query parameter using a dictionary
+        filters = {"product_id": 1}
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 1)
+        self.assertEqual(recommendations[0]["product_id"], 1)
+
+    def test_find_by_filters_with_multiple_conditions(self):
+        """It should return recommendations matching multiple conditions"""
+        recommendation = RecommendationsFactory(
+            product_id=1,
+            recommended_id=100,
+            recommendation_type="cross-sell",
+            status="active",
+        )
+        recommendation.create()
+        self._create_recommendations(2)  # Create other recommendations
+
+        # Pass multiple query parameters using a dictionary
+        filters = {
+            "product_id": 1,
+            "recommended_id": 100,
+            "recommendation_type": "cross-sell",
+            "status": "active",
+        }
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 1)
+        self.assertEqual(recommendations[0]["product_id"], 1)
+        self.assertEqual(recommendations[0]["recommended_id"], 100)
+        self.assertEqual(recommendations[0]["recommendation_type"], "cross-sell")
+        self.assertEqual(recommendations[0]["status"], "active")
+
+    def test_find_by_filters_with_pagination(self):
+        """It should return paginated results"""
+        # Create multiple recommendations
+        self._create_recommendations(15)
+
+        # Get the first page with 10 items per page
+        filters = {"page": 1, "limit": 10}
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 10)
+
+        # Get the second page
+        filters = {"page": 2, "limit": 10}
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 5)
+
+    def test_find_by_filters_with_sorting(self):
+        """It should return recommendations sorted by a specific field"""
+        recommendation1 = RecommendationsFactory(
+            created_at=datetime.now() - timedelta(days=1)
+        )
+        recommendation2 = RecommendationsFactory(created_at=datetime.now())
+        recommendation1.create()
+        recommendation2.create()
+
+        # Sort by created_at in ascending order
+        filters = {"sort_by": "created_at", "order": "asc"}
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 2)
+        self.assertEqual(recommendations[0]["created_at"], recommendation1.created_at)
+        self.assertEqual(recommendations[1]["created_at"], recommendation2.created_at)
+
+        # Sort by created_at in descending order
+        filters = {"sort_by": "created_at", "order": "desc"}
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 2)
+        self.assertEqual(recommendations[0]["created_at"], recommendation2.created_at)
+        self.assertEqual(recommendations[1]["created_at"], recommendation1.created_at)
+
+    def test_find_by_filters_with_date_range(self):
+        """It should return recommendations within a specific date range"""
+        # Use a fixed base time
+        base_time = datetime.now()
+        recommendation1 = RecommendationsFactory(
+            created_at=base_time - timedelta(days=2)
+        )
+        recommendation2 = RecommendationsFactory(
+            created_at=base_time - timedelta(days=1)
+        )
+        recommendation1.create()
+        recommendation2.create()
+
+        # Adjust created_at_max to the end of the day to ensure inclusion of boundary values
+        filters = {
+            "created_at_min": base_time - timedelta(days=3),
+            "created_at_max": base_time.replace(hour=23, minute=59, second=59),
+        }
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 2)
+
+        # Narrow date range test
+        filters = {
+            "created_at_min": base_time - timedelta(days=2, hours=1),
+            "created_at_max": base_time - timedelta(days=2),
+        }
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 1)
+        self.assertEqual(recommendations[0]["created_at"], recommendation1.created_at)
+
+    def test_find_by_filters_with_field_selection(self):
+        """It should return only selected fields"""
+        recommendation = RecommendationsFactory(
+            product_id=1,
+            recommended_id=100,
+            recommendation_type="cross-sell",
+            status="active",
+        )
+        recommendation.create()
+
+        # Query for specific fields only
+        filters = {"product_id": 1, "fields": ["product_id", "status"]}
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(len(recommendations), 1)
+        self.assertIn("product_id", recommendations[0])
+        self.assertIn("status", recommendations[0])
+        self.assertNotIn("recommended_id", recommendations[0])
+        self.assertNotIn("recommendation_type", recommendations[0])
+
+    def test_find_by_filters_no_conditions(self):
+        """It should return all recommendations when no filter is applied"""
+        self._create_recommendations(5)
+        recommendations = Recommendations.find_by_filters({})
+        self.assertEqual(len(recommendations), 5)
+
+    def test_find_by_filters_with_non_matching_conditions(self):
+        """It should return an empty list when no recommendations match the filter"""
+        self._create_recommendations(3)  # Create some recommendations
+
+        # Query for a non-existent product_id
+        filters = {"product_id": 9999}
+        recommendations = Recommendations.find_by_filters(filters)
+        self.assertEqual(recommendations, [])  # Should return an empty list
