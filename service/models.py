@@ -251,3 +251,99 @@ class Recommendations(db.Model):
         """
         logger.info("Processing recommended_id query for %s ...", recommended_id)
         return cls.query.filter(cls._recommended_id == recommended_id).all()
+
+    @classmethod
+    def find_by_filters(cls, filters):
+        """
+        Dynamically query Recommendations based on the provided filters
+
+        Args:
+            filters (dict): Dictionary of filters with the following possible keys:
+                - product_id (int): ID of the target product
+                - recommended_id (int): ID of the recommended product
+                - recommendation_type (str): Type of recommendation
+                - status (str): Status of the recommendation
+                - created_at_min (datetime): Minimum creation date
+                - created_at_max (datetime): Maximum creation date
+                - page (int): Page number for pagination, default is 1
+                - limit (int): Number of results per page, default is 10
+                - sort_by (str): Field to sort by, default is "created_at"
+                - order (str): Sort order, "asc" or "desc", default is "desc"
+                - fields (list): List of fields to return, default is None for all fields
+
+        Returns:
+            list: List of Recommendations matching the filters
+        """
+        query = cls.query
+
+        # Apply filters, date range, sorting, and pagination
+        query = cls._apply_filters(query, filters)
+        query = cls._apply_date_range(query, filters)
+        query = cls._apply_sorting(query, filters)
+        query = cls._apply_pagination(query, filters)
+
+        # Execute query and get results
+        results = query.all()
+
+        # Return only specified fields
+        return cls._select_fields(results, filters.get("fields"))
+
+    @classmethod
+    def _apply_filters(cls, query, filters):
+        """Apply multiple conditions based on filters"""
+        if "product_id" in filters:
+            query = query.filter(cls._product_id == filters["product_id"])
+        if "recommended_id" in filters:
+            query = query.filter(cls._recommended_id == filters["recommended_id"])
+        if "recommendation_type" in filters:
+            query = query.filter(
+                cls._recommendation_type == filters["recommendation_type"]
+            )
+        if "status" in filters:
+            query = query.filter(cls._status == filters["status"])
+        return query
+
+    @classmethod
+    def _apply_date_range(cls, query, filters):
+        """Apply date range filtering for created_at field"""
+        if "created_at_min" in filters:
+            query = query.filter(cls.created_at >= filters["created_at_min"])
+        if "created_at_max" in filters:
+            query = query.filter(cls.created_at <= filters["created_at_max"])
+        return query
+
+    @classmethod
+    def _apply_sorting(cls, query, filters):
+        """Apply sorting based on specified field and order"""
+        sort_by = filters.get("sort_by", "created_at")
+        order = filters.get("order", "desc")
+        if sort_by in ["created_at", "product_id", "recommended_id", "last_updated"]:
+            query = query.order_by(
+                getattr(cls, sort_by).asc()
+                if order == "asc"
+                else getattr(cls, sort_by).desc()
+            )
+        return query
+
+    @classmethod
+    def _apply_pagination(cls, query, filters):
+        """Apply pagination based on page and limit"""
+        page = filters.get("page", 1)
+        limit = filters.get("limit", 10)
+        offset = (page - 1) * limit
+        return query.offset(offset).limit(limit)
+
+    @classmethod
+    def _select_fields(cls, results, fields):
+        """Return only specified fields if provided, otherwise serialize full data"""
+        if fields:
+            fields_set = set(fields)
+            return [
+                {
+                    field: getattr(result, field)
+                    for field in fields_set
+                    if hasattr(result, field)
+                }
+                for result in results
+            ]
+        return [result.serialize() for result in results]
