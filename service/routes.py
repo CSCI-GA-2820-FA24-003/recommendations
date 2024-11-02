@@ -63,27 +63,56 @@ def list_recommendations():
     recommendations = []
 
     # Parse any arguments from the query string
-    product_id = request.args.get("product_id")
-    recommended_id = request.args.get("recommended_id")
+    # Adding "query_" in front of each arg to distinguish from original names and imported packages
+    query_product_id = request.args.get("product_id")
+    query_recommended_id = request.args.get("recommended_id")
+    query_recommendation_type = request.args.get("recommendation_type")
+    query_status = request.args.get("status")
 
-    if product_id:
-        app.logger.info("Find by product_id: %s", product_id)
-        # Validate product_id is an integer
+    # Find by product_id
+    if query_product_id:
+        app.logger.info("Find by product_id: %s", query_product_id)
+        # Validate query_product_id is an integer
         try:
-            product_id = int(product_id)
-            recommendations = Recommendations.find_by_product_id(product_id)
+            query_product_id = int(query_product_id)
+            recommendations = Recommendations.find_by_product_id(query_product_id)
         except ValueError as exc:
             app.logger.error("Invalid product_id")
             raise BadRequest("Invalid product_id: must be an integer") from exc
-    elif recommended_id:
-        app.logger.info("Find by recommended_id: %s", recommended_id)
+    # Find by recommended_id
+    elif query_recommended_id:
+        app.logger.info("Find by recommended_id: %s", query_recommended_id)
         # Validate recommended_id is an integer
         try:
-            recommended_id = int(recommended_id)
-            recommendations = Recommendations.find_by_recommended_id(recommended_id)
+            query_recommended_id = int(query_recommended_id)
+            recommendations = Recommendations.find_by_recommended_id(
+                query_recommended_id
+            )
         except ValueError as exc:
             app.logger.error("Invalid recommended_id")
             raise BadRequest("Invalid recommended_id: must be an integer") from exc
+    # Find by recommendation_type using find_by_filters
+    elif query_recommendation_type:
+        app.logger.info("Find by recommendation_type: %s", query_recommendation_type)
+        # Validate recommendation_type is a string
+        try:
+            recommendation_type = str(query_recommendation_type)
+            recommendations = Recommendations.find_by_filters(
+                {"recommendation_type": recommendation_type}
+            )
+        except ValueError as exc:
+            app.logger.error("Invalid recommendation_type")
+            raise BadRequest("Invalid recommendation_type: must be a string") from exc
+    # Find by status using find_by_filters
+    elif query_status:
+        app.logger.info("Find by status: %s", query_status)
+        # Validate status is a string
+        try:
+            query_status = str(query_status)
+            recommendations = Recommendations.find_by_filters({"status": query_status})
+        except ValueError as exc:
+            app.logger.error("Invalid status")
+            raise BadRequest("Invalid status: must be a string") from exc
     else:
         app.logger.info("Find all")
         recommendations = Recommendations.all()
