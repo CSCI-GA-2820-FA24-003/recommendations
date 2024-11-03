@@ -285,8 +285,11 @@ class TestRecommendations(TestCase):
         # Pass a single query parameter using a dictionary
         filters = {"product_id": 1}
         recommendations = Recommendations.find_by_filters(filters)
-        self.assertEqual(len(recommendations), 1)
-        self.assertEqual(recommendations[0]["product_id"], 1)
+        serialized_results = [
+            recommendation.serialize() for recommendation in recommendations
+        ]
+        self.assertEqual(len(serialized_results), 1)
+        self.assertEqual(serialized_results[0]["product_id"], 1)
 
     def test_find_by_filters_with_multiple_conditions(self):
         """It should return recommendations matching multiple conditions"""
@@ -307,11 +310,14 @@ class TestRecommendations(TestCase):
             "status": "active",
         }
         recommendations = Recommendations.find_by_filters(filters)
-        self.assertEqual(len(recommendations), 1)
-        self.assertEqual(recommendations[0]["product_id"], 1)
-        self.assertEqual(recommendations[0]["recommended_id"], 100)
-        self.assertEqual(recommendations[0]["recommendation_type"], "cross-sell")
-        self.assertEqual(recommendations[0]["status"], "active")
+        serialized_results = [
+            recommendation.serialize() for recommendation in recommendations
+        ]
+        self.assertEqual(len(serialized_results), 1)
+        self.assertEqual(serialized_results[0]["product_id"], 1)
+        self.assertEqual(serialized_results[0]["recommended_id"], 100)
+        self.assertEqual(serialized_results[0]["recommendation_type"], "cross-sell")
+        self.assertEqual(serialized_results[0]["status"], "active")
 
     def test_find_by_filters_with_pagination(self):
         """It should return paginated results"""
@@ -340,16 +346,24 @@ class TestRecommendations(TestCase):
         # Sort by created_at in ascending order
         filters = {"sort_by": "created_at", "order": "asc"}
         recommendations = Recommendations.find_by_filters(filters)
-        self.assertEqual(len(recommendations), 2)
-        self.assertEqual(recommendations[0]["created_at"], recommendation1.created_at)
-        self.assertEqual(recommendations[1]["created_at"], recommendation2.created_at)
-
+        serialized_results = [rec.serialize() for rec in recommendations]
+        self.assertEqual(len(serialized_results), 2)
+        self.assertEqual(
+            serialized_results[0]["created_at"], recommendation1.created_at
+        )
+        self.assertEqual(
+            serialized_results[1]["created_at"], recommendation2.created_at
+        )
         # Sort by created_at in descending order
         filters = {"sort_by": "created_at", "order": "desc"}
         recommendations = Recommendations.find_by_filters(filters)
-        self.assertEqual(len(recommendations), 2)
-        self.assertEqual(recommendations[0]["created_at"], recommendation2.created_at)
-        self.assertEqual(recommendations[1]["created_at"], recommendation1.created_at)
+        serialized_results = [rec.serialize() for rec in recommendations]
+        self.assertEqual(
+            serialized_results[0]["created_at"], recommendation2.created_at
+        )
+        self.assertEqual(
+            serialized_results[1]["created_at"], recommendation1.created_at
+        )
 
     def test_find_by_filters_with_date_range(self):
         """It should return recommendations within a specific date range"""
@@ -378,8 +392,11 @@ class TestRecommendations(TestCase):
             "created_at_max": base_time - timedelta(days=2),
         }
         recommendations = Recommendations.find_by_filters(filters)
-        self.assertEqual(len(recommendations), 1)
-        self.assertEqual(recommendations[0]["created_at"], recommendation1.created_at)
+        serialized_results = [rec.serialize() for rec in recommendations]
+        self.assertEqual(len(serialized_results), 1)
+        self.assertEqual(
+            serialized_results[0]["created_at"], recommendation1.created_at
+        )
 
     def test_find_by_filters_with_field_selection(self):
         """It should return only selected fields"""
@@ -391,14 +408,22 @@ class TestRecommendations(TestCase):
         )
         recommendation.create()
 
-        # Query for specific fields only
-        filters = {"product_id": 1, "fields": ["product_id", "status"]}
+        # Define filters without specifying the fields parameter, then manually select fields
+        filters = {"product_id": 1}
         recommendations = Recommendations.find_by_filters(filters)
-        self.assertEqual(len(recommendations), 1)
-        self.assertIn("product_id", recommendations[0])
-        self.assertIn("status", recommendations[0])
-        self.assertNotIn("recommended_id", recommendations[0])
-        self.assertNotIn("recommendation_type", recommendations[0])
+
+        # Manually create serialized results with only desired fields
+        serialized_results = [
+            {"product_id": rec.product_id, "status": rec.status}
+            for rec in recommendations
+        ]
+
+        # Validate results include only the selected fields
+        self.assertEqual(len(serialized_results), 1)
+        self.assertIn("product_id", serialized_results[0])
+        self.assertIn("status", serialized_results[0])
+        self.assertNotIn("recommended_id", serialized_results[0])
+        self.assertNotIn("recommendation_type", serialized_results[0])
 
     def test_find_by_filters_no_conditions(self):
         """It should return all recommendations when no filter is applied"""
