@@ -59,42 +59,34 @@ def index():
 def list_recommendations():
     """Returns all of the recommendations"""
     app.logger.info("Request for recommendation list")
-
-    recommendations = []
-
-    # Parse any arguments from the query string
-    # Adding "query_" in front of each arg to distinguish from original names and imported packages
-    query_product_id = request.args.get("product_id")
-    query_recommended_id = request.args.get("recommended_id")
-    query_recommendation_type = request.args.get("recommendation_type")
-    query_status = request.args.get("status")
-
+    # Utilize the general function find_by_filters
+    # Thus first parse the passed-in filters
+    filters = {}
     try:
-        if query_product_id:
-            app.logger.info("Find by product_id: %s", query_product_id)
-            recommendations = Recommendations.find_by_product_id(int(query_product_id))
-        elif query_recommended_id:
-            app.logger.info("Find by recommended_id: %s", query_recommended_id)
-            recommendations = Recommendations.find_by_recommended_id(
-                int(query_recommended_id)
-            )
-        elif query_recommendation_type:
-            app.logger.info(
-                "Find by recommendation_type: %s", query_recommendation_type
-            )
-            recommendations = Recommendations.find_by_filters(
-                {"recommendation_type": query_recommendation_type}
-            )
-        elif query_status:
-            app.logger.info("Find by status: %s", query_status)
-            recommendations = Recommendations.find_by_filters({"status": query_status})
-        else:
-            app.logger.info("Find all")
-            recommendations = Recommendations.all()
-
-        results = [recommendation.serialize() for recommendation in recommendations]
-        app.logger.info("Returning %d recommendations", len(results))
-        return jsonify(results), status.HTTP_200_OK
+        if "product_id" in request.args:
+            filters["product_id"] = int(request.args.get("product_id"))
+        if "recommended_id" in request.args:
+            filters["recommended_id"] = int(request.args.get("recommended_id"))
+        if "recommendation_type" in request.args:
+            filters["recommendation_type"] = request.args.get("recommendation_type")
+        if "status" in request.args:
+            filters["status"] = request.args.get("status")
+        if "sort_by" in request.args:
+            filters["sort_by"] = request.args.get("sort_by")
+        if "order" in request.args:
+            filters["order"] = request.args.get("order")
+        if "page" in request.args:
+            filters["page"] = int(request.args.get("page"))
+        if "limit" in request.args:
+            filters["limit"] = int(request.args.get("limit"))
+        # Execute find_by_filters
+        recommendations = Recommendations.find_by_filters(filters)
+        # Serialize results
+        serialized_results = [
+            recommendation.serialize() for recommendation in recommendations
+        ]
+        app.logger.info("Returning %d recommendations", len(serialized_results))
+        return jsonify(serialized_results), status.HTTP_200_OK
     except ValueError as exc:
         app.logger.error("Invalid data type")
         raise BadRequest("Invalid data type: must be an integer") from exc
