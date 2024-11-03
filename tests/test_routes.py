@@ -298,14 +298,14 @@ class TestYourResourceService(TestCase):
         response = self.client.get(f"{BASE_URL}?product_id=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
-        self.assertIn("Invalid product_id", data["message"])
+        self.assertIn("Invalid data type", data["message"])
 
     def test_list_recommendations_invalid_recommended_id(self):
         """It should not list recommendations with an invalid recommended_id"""
         response = self.client.get(f"{BASE_URL}?recommended_id=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
-        self.assertIn("Invalid recommended_id", data["message"])
+        self.assertIn("Invalid data type", data["message"])
 
     def test_list_recommendations_by_product_id(self):
         """It should List recommendations by product_id"""
@@ -348,7 +348,7 @@ class TestYourResourceService(TestCase):
         response = self.client.get(f"{BASE_URL}?recommendation_type=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
-        self.assertIn("Invalid recommendation_type", data["message"])
+        self.assertIn("Invalid data type", data["message"])
 
     def test_list_recommendations_by_status(self):
         """It should list recommendations by status"""
@@ -370,7 +370,7 @@ class TestYourResourceService(TestCase):
         response = self.client.get(f"{BASE_URL}?status=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
-        self.assertIn("Invalid status", data["message"])
+        self.assertIn("Invalid data type", data["message"])
 
     # ----------------------------------------------------------
     # TEST UPDATE - Successfully update a recommendation

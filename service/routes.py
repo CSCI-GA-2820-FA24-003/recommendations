@@ -69,53 +69,38 @@ def list_recommendations():
     query_recommendation_type = request.args.get("recommendation_type")
     query_status = request.args.get("status")
 
-    # Find by product_id
-    if query_product_id:
-        app.logger.info("Find by product_id: %s", query_product_id)
-        # Validate query_product_id is an integer
-        try:
+    try:
+        if query_product_id:
+            app.logger.info("Find by product_id: %s", query_product_id)
             recommendations = Recommendations.find_by_product_id(int(query_product_id))
-        except ValueError as exc:
-            app.logger.error("Invalid product_id")
-            raise BadRequest("Invalid product_id: must be an integer") from exc
-    # Find by recommended_id
-    elif query_recommended_id:
-        app.logger.info("Find by recommended_id: %s", query_recommended_id)
-        # Validate recommended_id is an integer
-        try:
+        elif query_recommended_id:
+            app.logger.info("Find by recommended_id: %s", query_recommended_id)
             recommendations = Recommendations.find_by_recommended_id(
                 int(query_recommended_id)
             )
-        except ValueError as exc:
-            app.logger.error("Invalid recommended_id")
-            raise BadRequest("Invalid recommended_id: must be an integer") from exc
-    # Find by recommendation_type using find_by_filters
-    elif query_recommendation_type:
-        app.logger.info("Find by recommendation_type: %s", query_recommendation_type)
-        try:
+        elif query_recommendation_type:
+            app.logger.info(
+                "Find by recommendation_type: %s", query_recommendation_type
+            )
             recommendations = Recommendations.find_by_filters(
                 {"recommendation_type": query_recommendation_type}
             )
-        except TypeError as exc:
-            app.logger.error("Invalid recommendation_type")
-            raise BadRequest(
-                "Invalid recommendation_type: the type is invalid"
-            ) from exc
-    # Find by status using find_by_filters
-    elif query_status:
-        app.logger.info("Find by status: %s", query_status)
-        try:
+        elif query_status:
+            app.logger.info("Find by status: %s", query_status)
             recommendations = Recommendations.find_by_filters({"status": query_status})
-        except TypeError as exc:
-            app.logger.error("Invalid status")
-            raise BadRequest("Invalid status: the status is invalid") from exc
-    else:
-        app.logger.info("Find all")
-        recommendations = Recommendations.all()
+        else:
+            app.logger.info("Find all")
+            recommendations = Recommendations.all()
 
-    results = [recommendation.serialize() for recommendation in recommendations]
-    app.logger.info("Returning %d recommendations", len(results))
-    return jsonify(results), status.HTTP_200_OK
+        results = [recommendation.serialize() for recommendation in recommendations]
+        app.logger.info("Returning %d recommendations", len(results))
+        return jsonify(results), status.HTTP_200_OK
+    except ValueError as exc:
+        app.logger.error("Invalid data type")
+        raise BadRequest("Invalid data type: must be an integer") from exc
+    except TypeError as exc:
+        app.logger.error("Invalid data type")
+        raise BadRequest("Invalid data type: the type is invalid in database") from exc
 
 
 ######################################################################
