@@ -282,11 +282,7 @@ class Recommendations(db.Model):
         query = cls._apply_sorting(query, filters)
         query = cls._apply_pagination(query, filters)
 
-        # Execute query and get results
-        results = query.all()
-
-        # Return only specified fields
-        return cls._select_fields(results, filters.get("fields"))
+        return query.all()
 
     @classmethod
     def _apply_filters(cls, query, filters):
@@ -332,18 +328,3 @@ class Recommendations(db.Model):
         limit = filters.get("limit", 10)
         offset = (page - 1) * limit
         return query.offset(offset).limit(limit)
-
-    @classmethod
-    def _select_fields(cls, results, fields):
-        """Return only specified fields if provided, otherwise serialize full data"""
-        if fields:
-            fields_set = set(fields)
-            return [
-                {
-                    field: getattr(result, field)
-                    for field in fields_set
-                    if hasattr(result, field)
-                }
-                for result in results
-            ]
-        return [result.serialize() for result in results]
