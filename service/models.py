@@ -47,6 +47,8 @@ class Recommendations(db.Model):
     last_updated = db.Column(
         db.DateTime, default=db.func.now(), onupdate=db.func.now(), nullable=False
     )
+    like = db.Column(db.Integer, default=0, nullable=False)
+    dislike = db.Column(db.Integer, default=0, nullable=False)
 
     @property
     def product_id(self):
@@ -194,6 +196,8 @@ class Recommendations(db.Model):
             "status": self.status,
             "last_updated": self.last_updated,
             "created_at": self.created_at,
+            "like": self.like,
+            "dislike": self.dislike,
         }
 
     def deserialize(self, data):
@@ -203,6 +207,8 @@ class Recommendations(db.Model):
             self.recommended_id = data["recommended_id"]
             self.recommendation_type = data["recommendation_type"]
             self.status = data["status"]
+            self.like = data["like"]
+            self.dislike = data["dislike"]
         except AttributeError as error:
             raise DataValidationError(f"Invalid attribute: {error.args[0]}") from error
         except KeyError as error:

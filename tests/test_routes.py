@@ -337,6 +337,8 @@ class TestYourResourceService(TestCase):
             + 1,  # Update recommended product ID
             "status": "expired",  # Update status
             "recommendation_type": "up-sell",  # Update recommendation type
+            "like": test_recommendation.like + 1,  # Update number of likes
+            "dislike": test_recommendation.dislike + 1,  # Update number of dislikes
         }
 
         # Send PUT request to update
@@ -370,6 +372,8 @@ class TestYourResourceService(TestCase):
             "recommended_id": 101,
             "status": "expired",
             "recommendation_type": "up-sell",
+            "like": 0,
+            "dislike": 0,
         }
 
         # Use a non-existing ID for the PUT request
@@ -394,6 +398,8 @@ class TestYourResourceService(TestCase):
             "recommended_id": None,
             "status": "expired",
             "recommendation_type": "up-sell",
+            "like": 0,
+            "dislike": 0,
         }
 
         # Send PUT request with invalid data
@@ -421,6 +427,8 @@ class TestYourResourceService(TestCase):
             "recommended_id": test_recommendation.recommended_id,
             "recommendation_type": test_recommendation.recommendation_type,
             "status": "invalid-status",  # Invalid status value
+            "like": 0,
+            "dislike": 0,
         }
 
         # Send PUT request with invalid status
@@ -449,6 +457,8 @@ class TestYourResourceService(TestCase):
             "recommended_id": test_recommendation.recommended_id,
             "recommendation_type": "invalid-type",  # Invalid type value
             "status": test_recommendation.status,  # Include valid status
+            "like": 0,
+            "dislike": 0,
         }
 
         # Send PUT request with invalid recommendation_type
@@ -508,6 +518,8 @@ class TestYourResourceService(TestCase):
             "recommended_id": test_recommendation.recommended_id,
             "status": "active",
             "recommendation_type": "cross-sell",
+            "like": 0,
+            "dislike": 0,
         }
 
         # Send PUT request with invalid product_id
@@ -573,6 +585,8 @@ class TestYourResourceService(TestCase):
                 "recommended_id": test_recommendation.recommended_id + 1,
                 "status": "expired",
                 "recommendation_type": "up-sell",
+                "like": 0,
+                "dislike": 0,
             }
             response = self.client.put(
                 f"{BASE_URL}/{test_recommendation.id}", json=new_data
@@ -600,6 +614,8 @@ class TestYourResourceService(TestCase):
                 "recommended_id": test_recommendation.recommended_id + 1,
                 "status": "expired",
                 "recommendation_type": "up-sell",
+                "like": 0,
+                "dislike": 0,
             }
             response = self.client.put(
                 f"{BASE_URL}/{test_recommendation.id}", json=new_data
