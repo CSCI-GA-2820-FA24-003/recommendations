@@ -322,6 +322,42 @@ class TestYourResourceService(TestCase):
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["product_id"], product_id)
 
+    def test_list_recommendations_by_recommendation_type(self):
+        """It should list recommendations by recommendation_type"""
+        test_recommendation = self._create_recommendations(5)
+        recommendation_type = test_recommendation[0].recommendation_type
+        type_count = len(
+            [
+                r
+                for r in test_recommendation
+                if r.recommendation_type == recommendation_type
+            ]
+        )
+        response = self.client.get(
+            f"{BASE_URL}?recommendation_type={recommendation_type}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), type_count)
+        # check the data just to be sure
+        for r in data:
+            self.assertEqual(r["recommendation_type"], recommendation_type)
+
+    def test_list_recommendations_by_status(self):
+        """It should list recommendations by status"""
+        test_recommendation = self._create_recommendations(5)
+        recommendation_status = test_recommendation[0].status
+        type_count = len(
+            [r for r in test_recommendation if r.status == recommendation_status]
+        )
+        response = self.client.get(f"{BASE_URL}?status={recommendation_status}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), type_count)
+        # check the data just to be sure
+        for r in data:
+            self.assertEqual(r["status"], recommendation_status)
+
     # ----------------------------------------------------------
     # TEST UPDATE - Successfully update a recommendation
     # ----------------------------------------------------------
