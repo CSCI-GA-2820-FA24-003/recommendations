@@ -343,6 +343,13 @@ class TestYourResourceService(TestCase):
         for r in data:
             self.assertEqual(r["recommendation_type"], recommendation_type)
 
+    def test_list_recommendations_by_invalid_recommended_type(self):
+        """It should not list recommendations with an invalid recommended_type"""
+        response = self.client.get(f"{BASE_URL}?recommendation_type=invalid")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Invalid recommendation_type", data["message"])
+
     def test_list_recommendations_by_status(self):
         """It should list recommendations by status"""
         test_recommendation = self._create_recommendations(5)
@@ -357,6 +364,13 @@ class TestYourResourceService(TestCase):
         # check the data just to be sure
         for r in data:
             self.assertEqual(r["status"], recommendation_status)
+
+    def test_list_recommendations_by_invalid_status(self):
+        """It should not list recommendations with an invalid status"""
+        response = self.client.get(f"{BASE_URL}?status=invalid")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Invalid status", data["message"])
 
     # ----------------------------------------------------------
     # TEST UPDATE - Successfully update a recommendation

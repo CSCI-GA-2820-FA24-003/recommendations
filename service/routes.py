@@ -94,25 +94,25 @@ def list_recommendations():
     # Find by recommendation_type using find_by_filters
     elif query_recommendation_type:
         app.logger.info("Find by recommendation_type: %s", query_recommendation_type)
-        # Validate recommendation_type is a string
         try:
             recommendation_type = str(query_recommendation_type)
             recommendations = Recommendations.find_by_filters(
                 {"recommendation_type": recommendation_type}
             )
-        except ValueError as exc:
+        except TypeError as exc:
             app.logger.error("Invalid recommendation_type")
-            raise BadRequest("Invalid recommendation_type: must be a string") from exc
+            raise BadRequest(
+                "Invalid recommendation_type: the type is invalid"
+            ) from exc
     # Find by status using find_by_filters
     elif query_status:
         app.logger.info("Find by status: %s", query_status)
-        # Validate status is a string
         try:
             query_status = str(query_status)
             recommendations = Recommendations.find_by_filters({"status": query_status})
-        except ValueError as exc:
+        except TypeError as exc:
             app.logger.error("Invalid status")
-            raise BadRequest("Invalid status: must be a string") from exc
+            raise BadRequest("Invalid status: the status is invalid") from exc
     else:
         app.logger.info("Find all")
         recommendations = Recommendations.all()
