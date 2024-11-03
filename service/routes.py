@@ -74,8 +74,7 @@ def list_recommendations():
         app.logger.info("Find by product_id: %s", query_product_id)
         # Validate query_product_id is an integer
         try:
-            query_product_id = int(query_product_id)
-            recommendations = Recommendations.find_by_product_id(query_product_id)
+            recommendations = Recommendations.find_by_product_id(int(query_product_id))
         except ValueError as exc:
             app.logger.error("Invalid product_id")
             raise BadRequest("Invalid product_id: must be an integer") from exc
@@ -84,9 +83,8 @@ def list_recommendations():
         app.logger.info("Find by recommended_id: %s", query_recommended_id)
         # Validate recommended_id is an integer
         try:
-            query_recommended_id = int(query_recommended_id)
             recommendations = Recommendations.find_by_recommended_id(
-                query_recommended_id
+                int(query_recommended_id)
             )
         except ValueError as exc:
             app.logger.error("Invalid recommended_id")
@@ -95,9 +93,8 @@ def list_recommendations():
     elif query_recommendation_type:
         app.logger.info("Find by recommendation_type: %s", query_recommendation_type)
         try:
-            recommendation_type = str(query_recommendation_type)
             recommendations = Recommendations.find_by_filters(
-                {"recommendation_type": recommendation_type}
+                {"recommendation_type": query_recommendation_type}
             )
         except TypeError as exc:
             app.logger.error("Invalid recommendation_type")
@@ -108,7 +105,6 @@ def list_recommendations():
     elif query_status:
         app.logger.info("Find by status: %s", query_status)
         try:
-            query_status = str(query_status)
             recommendations = Recommendations.find_by_filters({"status": query_status})
         except TypeError as exc:
             app.logger.error("Invalid status")
