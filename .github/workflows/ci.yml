@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     # Ensure to run tests in same environment
-    container: python:3.11-slim
+    container: quay.io/rofrano/python:3.11-slim
 
     services:
       # Label used to access the service container
