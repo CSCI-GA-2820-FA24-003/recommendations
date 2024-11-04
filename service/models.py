@@ -47,6 +47,8 @@ class Recommendations(db.Model):
     last_updated = db.Column(
         db.DateTime, default=db.func.now(), onupdate=db.func.now(), nullable=False
     )
+    _like = db.Column("like", db.Integer, default=0, nullable=False)
+    _dislike = db.Column("dislike", db.Integer, default=0, nullable=False)
 
     @property
     def product_id(self):
@@ -105,6 +107,34 @@ class Recommendations(db.Model):
                 "Invalid status: must be one of ['active', 'expired', 'draft']"
             )
         self._status = value
+
+    @property
+    def like(self):
+        """This property provides access to the number of likes."""
+        return self._like
+
+    @like.setter
+    def like(self, value):
+        """This setter validates and updates the number of likes."""
+        if not isinstance(value, int):
+            raise DataValidationError("Invalid like: must be an integer")
+        if value < 0:
+            raise DataValidationError("Invalid like: must be a non-negative number")
+        self._like = value
+
+    @property
+    def dislike(self):
+        """This property provides access to the number of dislikes."""
+        return self._dislike
+
+    @dislike.setter
+    def dislike(self, value):
+        """This setter validates and updates the number of dislikes."""
+        if not isinstance(value, int):
+            raise DataValidationError("Invalid dislike: must be an integer")
+        if value < 0:
+            raise DataValidationError("Invalid dislike: must be a non-negative number")
+        self._dislike = value
 
     def __repr__(self):
         return f"<Recommendation id=[{self.id}] product_id=[{self.product_id}] recommended_id=[{self.recommended_id}]>"
@@ -194,6 +224,8 @@ class Recommendations(db.Model):
             "status": self.status,
             "last_updated": self.last_updated,
             "created_at": self.created_at,
+            "like": self.like,
+            "dislike": self.dislike,
         }
 
     def deserialize(self, data):
@@ -203,6 +235,8 @@ class Recommendations(db.Model):
             self.recommended_id = data["recommended_id"]
             self.recommendation_type = data["recommendation_type"]
             self.status = data["status"]
+            self.like = data["like"]
+            self.dislike = data["dislike"]
         except AttributeError as error:
             raise DataValidationError(f"Invalid attribute: {error.args[0]}") from error
         except KeyError as error:
