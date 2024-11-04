@@ -100,6 +100,8 @@ class TestRecommendations(TestCase):
         self.assertEqual(data.recommended_id, recommendations.recommended_id)
         self.assertEqual(data.status, recommendations.status)
         self.assertEqual(data.recommendation_type, recommendations.recommendation_type)
+        self.assertEqual(data.like, recommendations.like)
+        self.assertEqual(data.dislike, recommendations.dislike)
 
     def test_create_recommendation_db_error(self):
         """It should raise a DataValidationError when the database fails to commit"""
@@ -193,6 +195,8 @@ class TestRecommendations(TestCase):
         self.assertEqual(
             serialized["recommendation_type"], recommendation.recommendation_type
         )
+        self.assertEqual(serialized["like"], recommendation.like)
+        self.assertEqual(serialized["dislike"], recommendation.dislike)
 
     def test_deserialize_invalid_product_id(self):
         """It should raise a DataValidationError for invalid product_id"""
@@ -226,6 +230,34 @@ class TestRecommendations(TestCase):
             "recommended_id": 100,
             "status": "invalid-status",  # Invalid status
             "recommendation_type": "cross-sell",
+        }
+        with self.assertRaises(DataValidationError):
+            recommendation.deserialize(invalid_data)
+
+    def test_deserialize_invalid_like(self):
+        """It should raise a DataValidationError for invalid recommendation_type"""
+        recommendation = Recommendations()
+        invalid_data = {
+            "product_id": 1,
+            "recommended_id": 100,
+            "status": "active",
+            "recommendation_type": "cross-sell",
+            "like": -1,  # Invalid like
+            "dislike": 0,
+        }
+        with self.assertRaises(DataValidationError):
+            recommendation.deserialize(invalid_data)
+
+    def test_deserialize_invalid_dislike(self):
+        """It should raise a DataValidationError for invalid recommendation_type"""
+        recommendation = Recommendations()
+        invalid_data = {
+            "product_id": 1,
+            "recommended_id": 100,
+            "status": "active",
+            "recommendation_type": "cross-sell",
+            "like": 0,
+            "dislike": -1,  # Invalid dislike
         }
         with self.assertRaises(DataValidationError):
             recommendation.deserialize(invalid_data)
