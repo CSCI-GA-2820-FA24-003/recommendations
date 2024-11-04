@@ -128,6 +128,8 @@ class TestYourResourceService(TestCase):
             new_recommendation["recommendation_type"],
             test_recommendation.recommendation_type,
         )
+        self.assertEqual(new_recommendation["like"], test_recommendation.like)
+        self.assertEqual(new_recommendation["dislike"], test_recommendation.dislike)
 
     def test_create_recommendation_data_validation_error(self):
         """It should return 400 Bad Request when data validation fails"""
@@ -137,6 +139,8 @@ class TestYourResourceService(TestCase):
             "recommended_id": 101,
             "recommendation_type": "up-sell",
             "status": "active",
+            "like": 0,
+            "dislike": 0,
         }
 
         # Send POST request with invalid data
@@ -360,6 +364,8 @@ class TestYourResourceService(TestCase):
             updated_recommendation["recommendation_type"],
             new_data["recommendation_type"],
         )
+        self.assertEqual(updated_recommendation["like"], new_data["like"])
+        self.assertEqual(updated_recommendation["dislike"], new_data["dislike"])
 
     # ----------------------------------------------------------
     # TEST UPDATE - Update a recommendation that does not exist
