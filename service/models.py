@@ -296,10 +296,18 @@ class Recommendations(db.Model):
         if "recommended_id" in filters:
             query = query.filter(cls._recommended_id == filters["recommended_id"])
         if "recommendation_type" in filters:
+            if filters["recommendation_type"] not in [
+                "cross-sell",
+                "up-sell",
+                "accessory",
+            ]:
+                raise TypeError("Invalid recommendation_type")
             query = query.filter(
                 cls._recommendation_type == filters["recommendation_type"]
             )
         if "status" in filters:
+            if filters["status"] not in ["active", "expired", "draft"]:
+                raise TypeError("Invalid status")
             query = query.filter(cls._status == filters["status"])
         return query
 
