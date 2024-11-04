@@ -59,38 +59,65 @@ def index():
 def list_recommendations():
     """Returns all of the recommendations"""
     app.logger.info("Request for recommendation list")
+    # Utilize the general function find_by_filters
+    # Thus first parse the passed-in filters
+    filters = filters_from_args()
+    recommendations = Recommendations.find_by_filters(filters)
+    serialized_results = [
+        recommendation.serialize() for recommendation in recommendations
+    ]
+    app.logger.info("Returning %d recommendations", len(serialized_results))
+    return jsonify(serialized_results), status.HTTP_200_OK
 
-    recommendations = []
 
-    # Parse any arguments from the query string
-    product_id = request.args.get("product_id")
-    recommended_id = request.args.get("recommended_id")
+######################################################################
+# HELPER FUNCTIONS FOR LIST ROUTE
+######################################################################
+def parse_int_param(param_name):
+    """Helper function to parse integer query parameters"""
+    try:
+        return int(request.args.get(param_name))
+    except (ValueError, TypeError) as exc:
+        app.logger.error("Invalid %s", param_name)
+        raise BadRequest("Invalid data type: must be an integer") from exc
 
-    if product_id:
-        app.logger.info("Find by product_id: %s", product_id)
-        # Validate product_id is an integer
-        try:
-            product_id = int(product_id)
-            recommendations = Recommendations.find_by_product_id(product_id)
-        except ValueError as exc:
-            app.logger.error("Invalid product_id")
-            raise BadRequest("Invalid product_id: must be an integer") from exc
-    elif recommended_id:
-        app.logger.info("Find by recommended_id: %s", recommended_id)
-        # Validate recommended_id is an integer
-        try:
-            recommended_id = int(recommended_id)
-            recommendations = Recommendations.find_by_recommended_id(recommended_id)
-        except ValueError as exc:
-            app.logger.error("Invalid recommended_id")
-            raise BadRequest("Invalid recommended_id: must be an integer") from exc
-    else:
-        app.logger.info("Find all")
-        recommendations = Recommendations.all()
 
-    results = [recommendation.serialize() for recommendation in recommendations]
-    app.logger.info("Returning %d recommendations", len(results))
-    return jsonify(results), status.HTTP_200_OK
+def validate_enum_param(param_name, value, valid_options):
+    """Helper function to validate enum query parameters"""
+    if value not in valid_options:
+        app.logger.error("Invalid %s", param_name)
+        raise BadRequest(f"Invalid {param_name}: must be one of {valid_options}")
+    return value
+
+
+def filters_from_args():
+    """Helper function to build filters dictionary from query args"""
+    filters = {}
+    if "product_id" in request.args:
+        filters["product_id"] = parse_int_param("product_id")
+    if "recommended_id" in request.args:
+        filters["recommended_id"] = parse_int_param("recommended_id")
+    if "page" in request.args:
+        filters["page"] = parse_int_param("page")
+    if "limit" in request.args:
+        filters["limit"] = parse_int_param("limit")
+    if "recommendation_type" in request.args:
+        filters["recommendation_type"] = validate_enum_param(
+            "recommendation_type",
+            request.args.get("recommendation_type"),
+            ["cross-sell", "up-sell", "accessory"],
+        )
+    if "status" in request.args:
+        filters["status"] = validate_enum_param(
+            "status",
+            request.args.get("status"),
+            ["active", "expired", "draft"],
+        )
+    if "sort_by" in request.args:
+        filters["sort_by"] = request.args.get("sort_by")
+    if "order" in request.args:
+        filters["order"] = request.args.get("order")
+    return filters
 
 
 ######################################################################
