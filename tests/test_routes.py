@@ -302,14 +302,14 @@ class TestYourResourceService(TestCase):
         response = self.client.get(f"{BASE_URL}?product_id=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
-        self.assertIn("Invalid product_id", data["message"])
+        self.assertIn("Invalid data type", data["message"])
 
     def test_list_recommendations_invalid_recommended_id(self):
         """It should not list recommendations with an invalid recommended_id"""
         response = self.client.get(f"{BASE_URL}?recommended_id=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
-        self.assertIn("Invalid recommended_id", data["message"])
+        self.assertIn("Invalid data type", data["message"])
 
     def test_list_recommendations_by_product_id(self):
         """It should List recommendations by product_id"""
@@ -325,6 +325,84 @@ class TestYourResourceService(TestCase):
         data = response.get_json()
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["product_id"], product_id)
+
+    def test_list_recommendations_by_recommendation_type(self):
+        """It should list recommendations by recommendation_type"""
+        test_recommendation = self._create_recommendations(5)
+        recommendation_type = test_recommendation[0].recommendation_type
+        type_count = len(
+            [
+                r
+                for r in test_recommendation
+                if r.recommendation_type == recommendation_type
+            ]
+        )
+        response = self.client.get(
+            f"{BASE_URL}?recommendation_type={recommendation_type}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), type_count)
+        # check the data just to be sure
+        for r in data:
+            self.assertEqual(r["recommendation_type"], recommendation_type)
+
+    def test_list_recommendations_by_invalid_recommended_type(self):
+        """It should not list recommendations with an invalid recommended_type"""
+        response = self.client.get(f"{BASE_URL}?recommendation_type=invalid")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Invalid recommendation_type", data["message"])
+
+    def test_list_recommendations_by_status(self):
+        """It should list recommendations by status"""
+        test_recommendation = self._create_recommendations(5)
+        recommendation_status = test_recommendation[0].status
+        type_count = len(
+            [r for r in test_recommendation if r.status == recommendation_status]
+        )
+        response = self.client.get(f"{BASE_URL}?status={recommendation_status}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), type_count)
+        # check the data just to be sure
+        for r in data:
+            self.assertEqual(r["status"], recommendation_status)
+
+    def test_list_recommendations_by_invalid_status(self):
+        """It should not list recommendations with an invalid status"""
+        response = self.client.get(f"{BASE_URL}?status=invalid")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Invalid status", data["message"])
+
+    def test_list_recommendations_with_pagination(self):
+        """It should list recommendations with pagination parameters"""
+        self._create_recommendations(15)
+        response = self.client.get(f"{BASE_URL}?page=1&limit=10")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 10)
+
+    def test_list_recommendations_with_invalid_page(self):
+        """It should return 400 for an invalid page parameter"""
+        response = self.client.get(f"{BASE_URL}?page=invalid")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
+        self.assertIn("Invalid data type", data["message"])
+
+    def test_list_recommendations_with_sort_order(self):
+        """It should list recommendations with a specified sort order"""
+        self._create_recommendations(5)
+        response = self.client.get(f"{BASE_URL}?sort_by=created_at&order=asc")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertTrue(
+            all(
+                data[i]["created_at"] <= data[i + 1]["created_at"]
+                for i in range(len(data) - 1)
+            )
+        )
 
     # ----------------------------------------------------------
     # TEST UPDATE - Successfully update a recommendation
