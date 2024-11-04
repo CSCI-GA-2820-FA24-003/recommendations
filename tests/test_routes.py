@@ -352,7 +352,7 @@ class TestYourResourceService(TestCase):
         response = self.client.get(f"{BASE_URL}?recommendation_type=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
-        self.assertIn("Invalid data type", data["message"])
+        self.assertIn("Invalid recommendation_type", data["message"])
 
     def test_list_recommendations_by_status(self):
         """It should list recommendations by status"""
@@ -374,7 +374,35 @@ class TestYourResourceService(TestCase):
         response = self.client.get(f"{BASE_URL}?status=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.get_json()
+        self.assertIn("Invalid status", data["message"])
+
+    def test_list_recommendations_with_pagination(self):
+        """It should list recommendations with pagination parameters"""
+        self._create_recommendations(15)
+        response = self.client.get(f"{BASE_URL}?page=1&limit=10")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 10)
+
+    def test_list_recommendations_with_invalid_page(self):
+        """It should return 400 for an invalid page parameter"""
+        response = self.client.get(f"{BASE_URL}?page=invalid")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = response.get_json()
         self.assertIn("Invalid data type", data["message"])
+
+    def test_list_recommendations_with_sort_order(self):
+        """It should list recommendations with a specified sort order"""
+        self._create_recommendations(5)
+        response = self.client.get(f"{BASE_URL}?sort_by=created_at&order=asc")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertTrue(
+            all(
+                data[i]["created_at"] <= data[i + 1]["created_at"]
+                for i in range(len(data) - 1)
+            )
+        )
 
     # ----------------------------------------------------------
     # TEST UPDATE - Successfully update a recommendation
