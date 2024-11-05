@@ -284,6 +284,32 @@ def update_recommendations(recommendation_id):
 
 
 ######################################################################
+# LIKE A RECOMMENDATION
+######################################################################
+@app.route("/recommendations/<int:recommendation_id>/like", methods=["PUT"])
+def like_recommendations(recommendation_id):
+    """Liking a recommendation adds 1 to like"""
+    app.logger.info("Request to like a recommendation with id: %d", recommendation_id)
+
+    # Attempt to find the Recommendation and abort if not found
+    recommendation = Recommendations.find(recommendation_id)
+    if not recommendation:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Recommendation with id '{recommendation_id}' was not found.",
+        )
+
+    # At this point you would execute code to like the recommendation
+    # For the moment, we will add the like by 1
+
+    recommendation.like += 1
+    recommendation.update()
+
+    app.logger.info("Recommendation with ID: %d has been liked.", recommendation_id)
+    return recommendation.serialize(), status.HTTP_200_OK
+
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 

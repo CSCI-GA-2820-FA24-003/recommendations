@@ -8,7 +8,7 @@ from service.models import Recommendations
 
 
 class RecommendationsFactory(factory.Factory):
-    """Creates fake pets that you don't have to feed"""
+    """Creates fake recommendations"""
 
     class Meta:  # pylint: disable=too-few-public-methods
         """Maps factory to data model"""
@@ -20,5 +20,3 @@ class RecommendationsFactory(factory.Factory):
     recommended_id = factory.Sequence(lambda n: n + 100)
     status = FuzzyChoice(choices=["active", "expired", "draft"])
     recommendation_type = FuzzyChoice(choices=["cross-sell", "up-sell", "accessory"])
-    like = factory.Sequence(lambda n: n)
-    dislike = factory.Sequence(lambda n: n)

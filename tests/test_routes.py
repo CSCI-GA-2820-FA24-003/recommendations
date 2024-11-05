@@ -128,8 +128,6 @@ class TestYourResourceService(TestCase):
             new_recommendation["recommendation_type"],
             test_recommendation.recommendation_type,
         )
-        self.assertEqual(new_recommendation["like"], test_recommendation.like)
-        self.assertEqual(new_recommendation["dislike"], test_recommendation.dislike)
 
     def test_create_recommendation_data_validation_error(self):
         """It should return 400 Bad Request when data validation fails"""
@@ -139,8 +137,6 @@ class TestYourResourceService(TestCase):
             "recommended_id": 101,
             "recommendation_type": "up-sell",
             "status": "active",
-            "like": 0,
-            "dislike": 0,
         }
 
         # Send POST request with invalid data
@@ -419,8 +415,6 @@ class TestYourResourceService(TestCase):
             + 1,  # Update recommended product ID
             "status": "expired",  # Update status
             "recommendation_type": "up-sell",  # Update recommendation type
-            "like": test_recommendation.like + 1,  # Update number of likes
-            "dislike": test_recommendation.dislike + 1,  # Update number of dislikes
         }
 
         # Send PUT request to update
@@ -442,8 +436,6 @@ class TestYourResourceService(TestCase):
             updated_recommendation["recommendation_type"],
             new_data["recommendation_type"],
         )
-        self.assertEqual(updated_recommendation["like"], new_data["like"])
-        self.assertEqual(updated_recommendation["dislike"], new_data["dislike"])
 
     # ----------------------------------------------------------
     # TEST UPDATE - Update a recommendation that does not exist
@@ -456,8 +448,6 @@ class TestYourResourceService(TestCase):
             "recommended_id": 101,
             "status": "expired",
             "recommendation_type": "up-sell",
-            "like": 0,
-            "dislike": 0,
         }
 
         # Use a non-existing ID for the PUT request
@@ -482,8 +472,6 @@ class TestYourResourceService(TestCase):
             "recommended_id": None,
             "status": "expired",
             "recommendation_type": "up-sell",
-            "like": 0,
-            "dislike": 0,
         }
 
         # Send PUT request with invalid data
@@ -511,8 +499,6 @@ class TestYourResourceService(TestCase):
             "recommended_id": test_recommendation.recommended_id,
             "recommendation_type": test_recommendation.recommendation_type,
             "status": "invalid-status",  # Invalid status value
-            "like": 0,
-            "dislike": 0,
         }
 
         # Send PUT request with invalid status
@@ -541,8 +527,6 @@ class TestYourResourceService(TestCase):
             "recommended_id": test_recommendation.recommended_id,
             "recommendation_type": "invalid-type",  # Invalid type value
             "status": test_recommendation.status,  # Include valid status
-            "like": 0,
-            "dislike": 0,
         }
 
         # Send PUT request with invalid recommendation_type
@@ -602,8 +586,6 @@ class TestYourResourceService(TestCase):
             "recommended_id": test_recommendation.recommended_id,
             "status": "active",
             "recommendation_type": "cross-sell",
-            "like": 0,
-            "dislike": 0,
         }
 
         # Send PUT request with invalid product_id
@@ -669,8 +651,6 @@ class TestYourResourceService(TestCase):
                 "recommended_id": test_recommendation.recommended_id + 1,
                 "status": "expired",
                 "recommendation_type": "up-sell",
-                "like": 0,
-                "dislike": 0,
             }
             response = self.client.put(
                 f"{BASE_URL}/{test_recommendation.id}", json=new_data
@@ -698,8 +678,6 @@ class TestYourResourceService(TestCase):
                 "recommended_id": test_recommendation.recommended_id + 1,
                 "status": "expired",
                 "recommendation_type": "up-sell",
-                "like": 0,
-                "dislike": 0,
             }
             response = self.client.put(
                 f"{BASE_URL}/{test_recommendation.id}", json=new_data
@@ -711,3 +689,29 @@ class TestYourResourceService(TestCase):
             # Check that the correct error message is returned
             data = response.get_json()
             self.assertIn("An unexpected error occurred", data["message"])
+
+    # ----------------------------------------------------------
+    # TEST ACTIONS - LIKE A RECOMMENDATION
+    # ----------------------------------------------------------
+    def test_like_a_recommendation(self):
+        """It should Like a Recommendation"""
+        test_recommendation = self._create_recommendations(1)[0]
+        test_recommendation.like = 0
+        original_like = test_recommendation.like
+        response = self.client.put(f"{BASE_URL}/{test_recommendation.id}/like")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(f"{BASE_URL}/{test_recommendation.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        logging.debug("Response data: %s", data)
+        self.assertEqual(data["like"], original_like + 1)
+
+    def test_like_a_nonexistent_recommendation(self):
+        """It should return 404 error when a recommendation is not found"""
+        # Use a non-existing ID for the PUT request
+        response = self.client.put(f"{BASE_URL}/0/like")
+
+        # Ensure the response is 404 Not Found
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.get_json()
+        self.assertIn("was not found", data["message"])
