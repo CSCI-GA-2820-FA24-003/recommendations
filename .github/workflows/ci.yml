@@ -55,3 +55,8 @@ jobs:
         run: pytest --pspec --cov=service --cov-report=xml --cov-fail-under=95
         env:
           DATABASE_URI: "postgresql+psycopg://postgres:pgs3cr3t@postgres:5432/testdb"
+
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v3.1.4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
