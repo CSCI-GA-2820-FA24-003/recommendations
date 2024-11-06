@@ -314,7 +314,7 @@ def like_recommendations(recommendation_id):
 ######################################################################
 @app.route("/recommendations/<int:recommendation_id>/dislike", methods=["PUT"])
 def dislike_recommendations(recommendation_id):
-    """Liking a recommendation adds 1 to dislike"""
+    """Disliking a recommendation adds 1 to dislike"""
     app.logger.info(
         "Request to dislike a recommendation with id: %d", recommendation_id
     )
