@@ -310,6 +310,34 @@ def like_recommendations(recommendation_id):
 
 
 ######################################################################
+# DISLIKE A RECOMMENDATION
+######################################################################
+@app.route("/recommendations/<int:recommendation_id>/dislike", methods=["PUT"])
+def dislike_recommendations(recommendation_id):
+    """Disliking a recommendation adds 1 to dislike"""
+    app.logger.info(
+        "Request to dislike a recommendation with id: %d", recommendation_id
+    )
+
+    # Attempt to find the Recommendation and abort if not found
+    recommendation = Recommendations.find(recommendation_id)
+    if not recommendation:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Recommendation with id '{recommendation_id}' was not found.",
+        )
+
+    # At this point you would execute code to dislike the recommendation
+    # For the moment, we will add the dislike by 1
+
+    recommendation.dislike += 1
+    recommendation.update()
+
+    app.logger.info("Recommendation with ID: %d has been disliked.", recommendation_id)
+    return recommendation.serialize(), status.HTTP_200_OK
+
+
+######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
 

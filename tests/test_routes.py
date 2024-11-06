@@ -715,3 +715,30 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         data = response.get_json()
         self.assertIn("was not found", data["message"])
+
+        # ----------------------------------------------------------
+
+    # TEST ACTIONS - DISLIKE A RECOMMENDATION
+    # ----------------------------------------------------------
+    def test_dislike_a_recommendation(self):
+        """It should Dislike a Recommendation"""
+        test_recommendation = self._create_recommendations(1)[0]
+        test_recommendation.dislike = 0
+        original_dislike = test_recommendation.dislike
+        response = self.client.put(f"{BASE_URL}/{test_recommendation.id}/dislike")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(f"{BASE_URL}/{test_recommendation.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        logging.debug("Response data: %s", data)
+        self.assertEqual(data["dislike"], original_dislike + 1)
+
+    def test_dislike_a_nonexistent_recommendation(self):
+        """It should return 404 error when a recommendation is not found"""
+        # Use a non-existing ID for the PUT request
+        response = self.client.put(f"{BASE_URL}/0/dislike")
+
+        # Ensure the response is 404 Not Found
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.get_json()
+        self.assertIn("was not found", data["message"])
