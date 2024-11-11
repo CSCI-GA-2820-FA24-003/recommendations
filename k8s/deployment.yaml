@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendations
+  labels:
+    app: recommendations
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0  
+  selector:
+    matchLabels:
+      app: recommendations
+  template:
+    metadata:
+      labels:
+        app: recommendations
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: recommendations
+        image: cluster-registry:5000/recommendations:1.0
+        # image: recommendations
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: DATABASE_URI
+          value: "sqlite:///:memory:"  # Use an in-memory SQLite database as a temporary database; PostgreSQL will be completed in the next story.
+        resources:
+          limits:
+            cpu: "0.25"
+            memory: "64Mi"
+          requests:
+            cpu: "0.10"
+            memory: "32Mi"
