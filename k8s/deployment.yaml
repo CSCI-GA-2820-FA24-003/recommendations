@@ -38,3 +38,17 @@ spec:
           requests:
             cpu: "0.10"
             memory: "32Mi"
+        # Liveness Probe: Used to check if the application is alive. If the probe fails, Kubernetes will automatically restart the container.
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        # Readiness Probe: Used to check if the application is ready to receive traffic. If the probe fails, the Pod will be marked as not ready and will not receive traffic.
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
