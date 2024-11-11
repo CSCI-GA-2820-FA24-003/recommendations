@@ -362,3 +362,10 @@ def check_content_type(content_type) -> None:
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    """Health check endpoint"""
+    app.logger.info("Health check endpoint called")
+    return jsonify({"status": "OK"}), status.HTTP_200_OK

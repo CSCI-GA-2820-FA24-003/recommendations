@@ -716,8 +716,7 @@ class TestYourResourceService(TestCase):
         data = response.get_json()
         self.assertIn("was not found", data["message"])
 
-        # ----------------------------------------------------------
-
+    # ----------------------------------------------------------
     # TEST ACTIONS - DISLIKE A RECOMMENDATION
     # ----------------------------------------------------------
     def test_dislike_a_recommendation(self):
@@ -742,3 +741,10 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         data = response.get_json()
         self.assertIn("was not found", data["message"])
+
+    def test_health_endpoint(self):
+        """It should return a 200_OK response from the /health endpoint"""
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["status"], "OK")

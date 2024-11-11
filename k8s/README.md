@@ -49,8 +49,15 @@ sudo bash -c "echo '127.0.0.1    cluster-registry' >> /etc/hosts"
 
 Tag `recommendations:1.0` as `cluster-registry:5000/recommendations:1.0` and push it to the local registry:
 
+Tag:
+
 ```bash
 docker tag recommendations:1.0 cluster-registry:5000/recommendations:1.0
+```
+
+Push:
+
+```bash
 docker push cluster-registry:5000/recommendations:1.0
 ```
 
