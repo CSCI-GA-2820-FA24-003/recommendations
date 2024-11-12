@@ -52,12 +52,12 @@ def step_impl(context):
     # load the database with new recommendations
     for row in context.table:
         payload = {
-            "product_id": row["product_id"],
-            "recommended_id": row["recommended_id"],
+            "product_id": int(row["product_id"]),
+            "recommended_id": int(row["recommended_id"]),
             "recommendation_type": row["recommendation_type"],
             "status": row["status"],
-            "like": row["like"],
-            "dislike": row["dislike"],
+            "like": int(row["like"]),
+            "dislike": int(row["dislike"]),
         }
         context.resp = requests.post(rest_endpoint, json=payload, timeout=WAIT_TIMEOUT)
         expect(context.resp.status_code).equal_to(HTTP_201_CREATED)
