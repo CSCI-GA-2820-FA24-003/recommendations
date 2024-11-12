@@ -222,12 +222,13 @@ $(function () {
             table += '<th class="col-md-2">Recommended ID</th>'
             table += '<th class="col-md-2">Recommendation Type</th>'
             table += '<th class="col-md-2">Status</th>'
-            // table += '<th class="col-md-2">Like</th>'
+            table += '<th class="col-md-2">Like</th>'
+            table += '<th class="col-md-2">Dislike</th>'
             table += '</tr></thead><tbody>'
             let firstRecommendation = "";
             for(let i = 0; i < res.length; i++) {
                 let recommendation = res[i];
-                table +=  `<tr id="row_${i}"><td>${recommendation.id}</td><td>${recommendation.product_id}</td><td>${recommendation.recommended_id}</td><td>${recommendation.recommendation_type}</td><td>${recommendation.status}</td></tr>`;
+                table +=  `<tr id="row_${i}"><td>${recommendation.id}</td><td>${recommendation.product_id}</td><td>${recommendation.recommended_id}</td><td>${recommendation.recommendation_type}</td><td>${recommendation.status}</td><td>${recommendation.like}</td><td>${recommendation.dislike}</td></tr>`;
                 if (i == 0) {
                     firstRecommendation = recommendation;
                 }

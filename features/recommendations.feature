@@ -6,10 +6,10 @@ Feature: The recommendations service back-end
 Background:
     Given the following recommendations
         | product_id | recommended_id | recommendation_type | status  | like | dislike |
-        | 1          | 101            | cross-sell          | active  | 2    | 0       |
-        | 2          | 102            | up-sell             | expired | 0    | 1       |
-        | 3          | 103            | accessory           | draft   | 1    | 1       |
-        | 4          | 104            | accessory           | active  | 4    | 0       |
+        | 1          | 101            | cross-sell          | active  | 0    | 0       |
+        | 2          | 102            | up-sell             | expired | 0    | 0       |
+        | 3          | 103            | accessory           | draft   | 0    | 0       |
+        | 4          | 104            | accessory           | active  | 0    | 0       |
 
 Scenario: The server is running
     When I visit the "Home Page"
