@@ -39,13 +39,13 @@ Scenario: The server is running
 #     And I should see "Male" in the "Gender" dropdown
 #     And I should see "2022-06-16" in the "Birthday" field
 
-# Scenario: List all recommendations
-#     When I visit the "Home Page"
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-    # And I should see "1" in the results
-    # And I should see "103" in the results
-    # And I should not see "5" in the results
+Scenario: List all recommendations
+    When I visit the "Home Page"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "101" in the results
+    And I should see "102" in the results
+    And I should not see "105" in the results
 
 # Scenario: Search for dogs
 #     When I visit the "Home Page"
