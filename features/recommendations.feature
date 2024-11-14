@@ -47,24 +47,24 @@ Scenario: List all recommendations
     And I should see "102" in the results
     And I should not see "105" in the results
 
-# Scenario: Search for dogs
-#     When I visit the "Home Page"
-#     And I set the "Category" to "dog"
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-#     And I should see "fido" in the results
-#     And I should not see "kitty" in the results
-#     And I should not see "leo" in the results
+Scenario: Search for recommendations for product id 1
+    When I visit the "Home Page"
+    And I set the "Product ID" to "1"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "1" in the results
+    And I should not see "2" in the results
+    And I should not see "103" in the results
 
-# Scenario: Search for available
-#     When I visit the "Home Page"
-#     And I select "True" in the "Available" dropdown
-#     And I press the "Search" button
-#     Then I should see the message "Success"
-#     And I should see "fido" in the results
-#     And I should see "kitty" in the results
-#     And I should see "sammy" in the results
-#     And I should not see "leo" in the results
+Scenario: Search for active recommendations
+    When I visit the "Home Page"
+    And I select "Active" in the "Status" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "104" in the results
+    And I should see "101" in the results
+    And I should not see "102" in the results
+    And I should not see "103" in the results
 
 # Scenario: Update a Recommendation
 #     When I visit the "Home Page"
