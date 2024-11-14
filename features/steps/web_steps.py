@@ -53,6 +53,14 @@ def step_impl(context, text_string):
     assert text_string not in element.text
 
 
+@when('I enter "{value}" in the "{field_name}" field')
+def step_enter_text_in_field(context, value, field_name):
+    # Locate the field and enter the value
+    field = context.browser.find_element_by_name(field_name)  # adjust locator as needed
+    field.clear()
+    field.send_keys(value)
+
+
 @when('I set the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
     element_id = ID_PREFIX + element_name.lower().replace(" ", "_")
