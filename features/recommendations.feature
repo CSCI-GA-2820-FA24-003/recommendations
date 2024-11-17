@@ -18,8 +18,8 @@ Scenario: The server is running
 
 Scenario: Create a Recommendation
     When I visit the "Home Page"
-    When I enter "12345" in the "Product ID" field
-    And I enter "67890" in the "Recommended ID" field
+    When I set the "Product ID" to "12345"
+    And I set the "Recommended ID" to "67890"
     And I set the "Recommendation Type" to "Accessory"
     And I set the "Status" to "Active"
     And I press the "Create" button
