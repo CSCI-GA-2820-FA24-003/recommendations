@@ -53,7 +53,6 @@ def step_impl(context, text_string):
     assert text_string not in element.text
 
 
-
 @when('I set the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
     element_id = ID_PREFIX + element_name.lower().replace(" ", "_")

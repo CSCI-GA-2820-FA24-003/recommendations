@@ -18,27 +18,28 @@ Scenario: The server is running
 
 Scenario: Create a Recommendation
     When I visit the "Home Page"
-    When I set the "Product ID" to "12345"
+    And I set the "Product ID" to "12345"
     And I set the "Recommended ID" to "67890"
-    And I set the "Recommendation Type" to "Accessory"
-    And I set the "Status" to "Active"
+    And I select "Accessory" in the "Recommendation Type" dropdown
+    And I select "Active" in the "Status" dropdown
     And I press the "Create" button
     Then I should see the message "Success"
-    
-    When I copy the "Recommendation ID" field
+
+    When I copy the "ID" field
     And I press the "Clear" button
     Then the "Product ID" field should be empty
     And the "Recommended ID" field should be empty
     And the "Recommendation Type" field should be empty
     And the "Status" field should be empty
-    
-    When I paste the "Recommendation ID" field
+
+    When I paste the "ID" field
     And I press the "Retrieve" button
     Then I should see the message "Success"
     And I should see "12345" in the "Product ID" field
     And I should see "67890" in the "Recommended ID" field
-    And I should see "Accessory" in the "Recommendation Type" field
-    And I should see "Active" in the "Status" field
+    And I should see "Accessory" in the "Recommendation Type" dropdown
+    And I should see "Active" in the "Status" dropdown
+
 
 
 Scenario: List all recommendations
