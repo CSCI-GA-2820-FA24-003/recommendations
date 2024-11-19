@@ -12,6 +12,7 @@ $(function () {
         $("#recommendation_recommendation_type").val(res.recommendation_type);
         $("#recommendation_status").val(res.status);
         $("#recommendation_like").val(res.like);
+        $("#recommendation_dislike").val(res.dislike);
     }
 
     /// Clears all form fields
@@ -21,6 +22,7 @@ $(function () {
         $("#recommendation_recommendation_type").val("");
         $("#recommendation_status").val("");
         $("#recommendation_like").val("");
+        $("#recommendation_dislike").val("");
     }
 
     // Updates the flash message area
