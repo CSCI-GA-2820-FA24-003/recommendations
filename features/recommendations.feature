@@ -6,10 +6,10 @@ Feature: The recommendations service back-end
 Background:
     Given the following recommendations
         | product_id | recommended_id | recommendation_type | status  | like | dislike |
-        | 1          | 101            | cross-sell          | active  | 0    | 0       |
-        | 2          | 102            | up-sell             | expired | 0    | 0       |
-        | 3          | 103            | accessory           | draft   | 0    | 0       |
-        | 4          | 104            | accessory           | active  | 0    | 0       |
+        | 11          | 101            | cross-sell          | active  | 0    | 0       |
+        | 12          | 102            | up-sell             | expired | 0    | 0       |
+        | 13          | 103            | accessory           | draft   | 0    | 0       |
+        | 14          | 104            | accessory           | active  | 0    | 0       |
 
 Scenario: The server is running
     When I visit the "Home Page"
@@ -50,13 +50,13 @@ Scenario: List all recommendations
     And I should see "102" in the results
     And I should not see "105" in the results
 
-Scenario: Search for recommendations for product id 1
+Scenario: Search for recommendations for product id 11
     When I visit the "Home Page"
-    And I set the "Product ID" to "1"
+    And I set the "Product ID" to "11"
     And I press the "Search" button
     Then I should see the message "Success"
-    And I should see "1" in the results
-    And I should not see "2" in the results
+    And I should see "11" in the results
+    And I should not see "12" in the results
     And I should not see "103" in the results
 
 Scenario: Search for active recommendations
@@ -108,3 +108,31 @@ Scenario: Search for active recommendations
 #     And I paste the "Id" field
 #     And I press the "Retrieve" button
 #     Then I should see the message "404 Not Found"
+
+Scenario: Like a recommendation
+    When I visit the "Home Page"
+    And I set the "Product ID" to "11"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "11" in the results
+    And I should see "101" in the results
+    And I should not see "12" in the results
+    And I should not see "103" in the results
+
+    When I press the "Like" button
+    Then I should see the message "Recommendation has been Liked!"
+
+    When I copy the "ID" field
+    And I press the "Clear" button
+    Then the "Product ID" field should be empty
+    And the "Recommended ID" field should be empty
+    And the "Recommendation Type" field should be empty
+    And the "Status" field should be empty
+
+    When I paste the "ID" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "11" in the "Product ID" field
+    And I should see "101" in the "Recommended ID" field
+    And I should see "1" in the "Like" field
+    And I should see "0" in the "Dislike" field

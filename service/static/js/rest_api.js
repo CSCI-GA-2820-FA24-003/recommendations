@@ -11,7 +11,8 @@ $(function () {
         $("#recommendation_recommended_id").val(res.recommended_id);
         $("#recommendation_recommendation_type").val(res.recommendation_type);
         $("#recommendation_status").val(res.status);
-        // $("#recommendation_like").val(res.like);
+        $("#recommendation_like").val(res.like);
+        $("#recommendation_dislike").val(res.dislike);
     }
 
     /// Clears all form fields
@@ -20,7 +21,8 @@ $(function () {
         $("#recommendation_recommended_id").val("");
         $("#recommendation_recommendation_type").val("");
         $("#recommendation_status").val("");
-        // $("#recommendation_like").val("");
+        $("#recommendation_like").val("");
+        $("#recommendation_dislike").val("");
     }
 
     // Updates the flash message area
@@ -165,6 +167,34 @@ $(function () {
         ajax.fail(function(res){
             flash_message("Server error!")
         });
+    });
+
+    // ****************************************
+    // Like a Recommendation
+    // ****************************************
+
+    $("#like-btn").click(function () {
+
+        let recommendation_id = $("#recommendation_id").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/recommendations/${recommendation_id}/like`,
+            contentType: "application/json",
+            data: '',
+        })
+
+        ajax.done(function(res){
+            clear_form_data()
+            flash_message("Recommendation has been Liked!")
+        });
+
+        ajax.fail(function(res){
+            flash_message("Server error!")
+        });
+
     });
 
     // ****************************************
