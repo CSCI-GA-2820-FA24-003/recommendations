@@ -109,30 +109,30 @@ Scenario: Search for active recommendations
 #     And I press the "Retrieve" button
 #     Then I should see the message "404 Not Found"
 
-# Scenario: Like for active recommendations
-    # When I visit the "Home Page"
-    # And I set the "Product ID" to "1"
-    # And I press the "Search" button
-    # Then I should see the message "Success"
-    # And I should see "1" in the results
-    # And I should see "101" in the results
-    # And I should not see "2" in the results
-    # And I should not see "103" in the results
+Scenario: Like for active recommendations
+    When I visit the "Home Page"
+    And I set the "Product ID" to "1"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "1" in the results
+    And I should see "101" in the results
+    And I should not see "2" in the results
+    And I should not see "103" in the results
 
-    # When I press the "Like" button
-    # Then I should see the message "Success"
+    When I press the "Like" button
+    Then I should see the message "Recommendation has been Liked!"
 
-    # When I copy the "ID" field
-    # And I press the "Clear" button
-    # Then the "Product ID" field should be empty
-    # And the "Recommended ID" field should be empty
-    # And the "Recommendation Type" field should be empty
-    # And the "Status" field should be empty
+    When I copy the "ID" field
+    And I press the "Clear" button
+    Then the "Product ID" field should be empty
+    And the "Recommended ID" field should be empty
+    And the "Recommendation Type" field should be empty
+    And the "Status" field should be empty
 
-    # When I paste the "ID" field
-    # And I press the "Retrieve" button
-    # Then I should see the message "Success"
-    # And I should see "1" in the "Product ID" field
-    # And I should see "101" in the "Recommended ID" field
-    # And I should see "1" in the "Like" field
-    # And I should see "0" in the "Dislike" field
+    When I paste the "ID" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "1" in the "Product ID" field
+    And I should see "101" in the "Recommended ID" field
+    And I should see "1" in the "Like" field
+    And I should see "0" in the "Dislike" field
