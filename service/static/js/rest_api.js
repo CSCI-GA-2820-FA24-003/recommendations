@@ -11,7 +11,7 @@ $(function () {
         $("#recommendation_recommended_id").val(res.recommended_id);
         $("#recommendation_recommendation_type").val(res.recommendation_type);
         $("#recommendation_status").val(res.status);
-        // $("#recommendation_like").val(res.like);
+        $("#recommendation_like").val(res.like);
     }
 
     /// Clears all form fields
@@ -20,7 +20,7 @@ $(function () {
         $("#recommendation_recommended_id").val("");
         $("#recommendation_recommendation_type").val("");
         $("#recommendation_status").val("");
-        // $("#recommendation_like").val("");
+        $("#recommendation_like").val("");
     }
 
     // Updates the flash message area
