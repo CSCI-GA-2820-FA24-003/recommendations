@@ -109,7 +109,7 @@ Scenario: Search for active recommendations
 #     And I press the "Retrieve" button
 #     Then I should see the message "404 Not Found"
 
-Scenario: Like for active recommendations
+Scenario: Like a recommendation
     When I visit the "Home Page"
     And I set the "Product ID" to "1"
     And I press the "Search" button
