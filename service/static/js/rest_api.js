@@ -198,6 +198,34 @@ $(function () {
     });
 
     // ****************************************
+    // Dislike a Recommendation
+    // ****************************************
+
+    $("#dislike-btn").click(function () {
+
+        let recommendation_id = $("#recommendation_id").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/recommendations/${recommendation_id}/dislike`,
+            contentType: "application/json",
+            data: '',
+        })
+
+        ajax.done(function(res){
+            clear_form_data()
+            flash_message("Recommendation has been Disliked!")
+        });
+
+        ajax.fail(function(res){
+            flash_message("Server error!")
+        });
+
+    });
+
+    // ****************************************
     // Clear the form
     // ****************************************
 
