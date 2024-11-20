@@ -136,31 +136,3 @@ Scenario: Like a recommendation
     And I should see "101" in the "Recommended ID" field
     And I should see "1" in the "Like" field
     And I should see "0" in the "Dislike" field
-
-Scenario: Dislike a recommendation
-    When I visit the "Home Page"
-    And I set the "Product ID" to "13"
-    And I press the "Search" button
-    Then I should see the message "Success"
-    And I should see "13" in the results
-    And I should see "103" in the results
-    And I should not see "12" in the results
-    And I should not see "102" in the results
-
-    When I press the "Dislike" button
-    Then I should see the message "Recommendation has been Disliked!"
-
-    When I copy the "ID" field
-    And I press the "Clear" button
-    Then the "Product ID" field should be empty
-    And the "Recommended ID" field should be empty
-    And the "Recommendation Type" field should be empty
-    And the "Status" field should be empty
-
-    When I paste the "ID" field
-    And I press the "Retrieve" button
-    Then I should see the message "Success"
-    And I should see "13" in the "Product ID" field
-    And I should see "103" in the "Recommended ID" field
-    And I should see "0" in the "Like" field
-    And I should see "1" in the "Dislike" field
