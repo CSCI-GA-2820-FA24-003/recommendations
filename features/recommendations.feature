@@ -91,6 +91,28 @@ Scenario: Search for active recommendations
 #     And I should see "Loki" in the results
 #     And I should not see "fido" in the results
 
+Scenario: Delete a Recommendation
+    When I visit the "Home Page"
+    And I set the "Product ID" to "11"
+    And I set the "Recommended ID" to "101"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "11" in the "Product ID" field
+    And I should see "101" in the "Recommended ID" field
+
+    When I copy the "ID" field
+    And I press the "Clear" button
+    And I paste the "ID" field
+    And I press the "Delete" button
+    Then I should see the message "Recommendation has been Deleted!"
+
+    When I press the "Clear" button
+    And I paste the "ID" field
+    And I press the "Retrieve" button
+    Then I should see the message "404 Not Found"
+
+
+
 # Scenario: Delete a Recommendation
 #     When I visit the "Home Page"
 #     And I set the "Name" to "fido"
