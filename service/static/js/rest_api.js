@@ -148,7 +148,7 @@ $(function () {
 
     $("#delete-btn").click(function () {
 
-        let recommendation_id = $("#recommendation_id").val();
+        let recommendation_id = parseInt($("#recommendation_id").val());
 
         $("#flash_message").empty();
 
