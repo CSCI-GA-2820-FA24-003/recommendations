@@ -77,9 +77,9 @@ $(function () {
 
     $("#update-btn").click(function () {
 
-        let recommendation_id = $("#recommendation_id").val();
-        let product_id = $("#recommendation_product_id").val();
-        let recommended_id = $("#recommendation_recommended_id").val();
+        let recommendation_id = parseInt($("#recommendation_id").val());
+        let product_id = parseInt($("#recommendation_product_id").val()); 
+        let recommended_id = parseInt($("#recommendation_recommended_id").val());
         let recommendation_type = $("#recommendation_recommendation_type").val();
         let status = $("#recommendation_status").val();
         // let like = $("#recommendation_like").val();
