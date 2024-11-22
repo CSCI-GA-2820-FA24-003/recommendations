@@ -92,7 +92,7 @@ kns lab
 Apply the Kubernetes manifests in the `k8s` folder to deploy the `recommendations` application:
 
 ```bash
-kubectl apply -f k8s/
+kubectl apply -f k8s/ --recursive
 ```
 
 To check the status of all resources in the `default` namespace and confirm the Pods are running:
@@ -122,7 +122,7 @@ Replace `<pod-name>` with the actual name of your Pod.
 To remove all resources associated with the application, run:
 
 ```bash
-kubectl delete -f k8s/
+kubectl delete -f k8s/ --recursive
 ```
 
 ---
