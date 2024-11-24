@@ -20,7 +20,8 @@ Recommendations Service
 This service implements a REST API that allows you to Create, Read, Update
 and Delete Recommendations
 """
-
+# pylint: disable=unused-import
+from flask_restx import Resource, fields, reqparse, inputs  # noqa: F401
 from flask import jsonify, request, abort, url_for
 from flask import current_app as app  # Import Flask application
 from sqlalchemy.exc import SQLAlchemyError
@@ -28,6 +29,7 @@ from werkzeug.exceptions import BadRequest
 from service.models import Recommendations
 from service.common import status  # HTTP Status Codes
 from service.models import DataValidationError
+from . import api  # pylint: disable=cyclic-import
 
 
 ######################################################################
@@ -39,6 +41,70 @@ def index():
     app.logger.info("Request for Root URL")
     return app.send_static_file("index.html")
 
+
+# Define the model so that the docs reflect what can be sent
+create_model = api.model(
+    "Recommendation",
+    {
+        "product_id": fields.Integer(
+            required=True, description="The product id of the Recommendation"
+        ),
+        "recommended_id": fields.Integer(
+            required=True,
+            description="The recommended product id of the Recommendation",
+        ),
+        "recommendation_type": fields.String(
+            required=True,
+            description="The type of Recommendation (e.g., cross-sell, up-sell, accessory, etc.)",
+        ),
+        "status": fields.String(
+            required=True,
+            description="The status of Recommendation (e.g., active, draft, expired, etc.)",
+        ),
+        # pylint: disable=protected-access
+    },
+)
+
+recommendation_model = api.inherit(
+    "RecommendationModel",
+    create_model,
+    {
+        "_id": fields.String(
+            readOnly=True, description="The unique id assigned internally by service"
+        ),
+    },
+)
+
+# query string arguments
+recommendation_args = reqparse.RequestParser()
+recommendation_args.add_argument(
+    "product_id",
+    type=int,
+    location="args",
+    required=False,
+    help="List Recommendations by product id",
+)
+recommendation_args.add_argument(
+    "recommended_id",
+    type=int,
+    location="args",
+    required=False,
+    help="List Recommendations by recommended id",
+)
+recommendation_args.add_argument(
+    "recommendation_type",
+    type=str,
+    location="args",
+    required=False,
+    help="List Recommendations by type",
+)
+recommendation_args.add_argument(
+    "status",
+    type=str,
+    location="args",
+    required=False,
+    help="List Recommendations by status",
+)
 
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
