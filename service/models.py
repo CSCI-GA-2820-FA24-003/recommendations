@@ -17,6 +17,10 @@ class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
 
 
+class DatabaseConnectionError(Exception):
+    """Custom Exception when database connection fails"""
+
+
 class Recommendations(db.Model):
     """
     Class that represents a Recommendations
@@ -194,8 +198,10 @@ class Recommendations(db.Model):
             "recommended_id": self.recommended_id,
             "recommendation_type": self.recommendation_type,
             "status": self.status,
-            "last_updated": self.last_updated,
-            "created_at": self.created_at,
+            "last_updated": (
+                self.last_updated.isoformat() if self.last_updated else None
+            ),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "like": self.like,
             "dislike": self.dislike,
         }
