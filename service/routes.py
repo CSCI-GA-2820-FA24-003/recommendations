@@ -21,6 +21,7 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Recommendations
 """
 # pylint: disable=unused-import
+import secrets
 from flask_restx import Resource, fields, reqparse, inputs  # noqa: F401
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
@@ -139,6 +140,14 @@ recommendation_args.add_argument(
 recommendation_args.add_argument(
     "order", type=str, location="args", required=False, help="Sort order (asc or desc)"
 )
+
+
+######################################################################
+# Function to generate a random API key (good for testing)
+######################################################################
+def generate_apikey():
+    """Helper function used when testing API keys"""
+    return secrets.token_hex(16)
 
 
 ######################################################################
