@@ -349,20 +349,20 @@ class TestRecommendations(TestCase):
         serialized_results = [rec.serialize() for rec in recommendations]
         self.assertEqual(len(serialized_results), 2)
         self.assertEqual(
-            serialized_results[0]["created_at"], recommendation1.created_at
+            serialized_results[0]["created_at"], recommendation1.created_at.isoformat()
         )
         self.assertEqual(
-            serialized_results[1]["created_at"], recommendation2.created_at
+            serialized_results[1]["created_at"], recommendation2.created_at.isoformat()
         )
         # Sort by created_at in descending order
         filters = {"sort_by": "created_at", "order": "desc"}
         recommendations = Recommendations.find_by_filters(filters)
         serialized_results = [rec.serialize() for rec in recommendations]
         self.assertEqual(
-            serialized_results[0]["created_at"], recommendation2.created_at
+            serialized_results[0]["created_at"], recommendation2.created_at.isoformat()
         )
         self.assertEqual(
-            serialized_results[1]["created_at"], recommendation1.created_at
+            serialized_results[1]["created_at"], recommendation1.created_at.isoformat()
         )
 
     def test_find_by_filters_with_date_range(self):
@@ -395,7 +395,7 @@ class TestRecommendations(TestCase):
         serialized_results = [rec.serialize() for rec in recommendations]
         self.assertEqual(len(serialized_results), 1)
         self.assertEqual(
-            serialized_results[0]["created_at"], recommendation1.created_at
+            serialized_results[0]["created_at"], recommendation1.created_at.isoformat()
         )
 
     def test_find_by_filters_with_field_selection(self):
