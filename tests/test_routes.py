@@ -150,8 +150,8 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Check the actual error message
-        # data = response.get_json()
-        # self.assertIn("Invalid product_id: must be an integer", data["message"])
+        data = response.get_json()
+        self.assertIn("Invalid product_id: must be an integer", data["message"])
 
     # def test_create_recommendation_db_error(self):
     #     """It should return 500 Internal Server Error when the database fails"""
@@ -175,8 +175,8 @@ class TestYourResourceService(TestCase):
         test_recommendation = RecommendationsFactory()
         response = self.client.post(BASE_URL, data=test_recommendation.serialize())
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-        # data = response.get_json()
-        # self.assertIn("Content-Type must be application/json", data["message"])
+        data = response.get_json()
+        self.assertIn("Content-Type", data["message"])
 
     def test_create_recommendation_invalid_content_type(self):
         """It should return 415 Unsupported Media Type when Content-Type is invalid"""
@@ -185,8 +185,8 @@ class TestYourResourceService(TestCase):
             BASE_URL, data=test_recommendation.serialize(), content_type="text/plain"
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-        # data = response.get_json()
-        # self.assertIn("Content-Type must be application/json", data["message"])
+        data = response.get_json()
+        self.assertIn("Content-Type", data["message"])
 
     # def test_create_recommendation_unexpected_error(self):
     #     """It should return 500 Internal Server Error when an unexpected error occurs"""
@@ -353,8 +353,8 @@ class TestYourResourceService(TestCase):
         """It should not list recommendations with an invalid recommended_type"""
         response = self.client.get(f"{BASE_URL}?recommendation_type=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # data = response.get_json()
-        # self.assertIn("Invalid recommendation_type", data["message"])
+        data = response.get_json()
+        self.assertIn("Invalid recommendation_type", data["message"])
 
     def test_list_recommendations_by_status(self):
         """It should list recommendations by status"""
@@ -375,8 +375,8 @@ class TestYourResourceService(TestCase):
         """It should not list recommendations with an invalid status"""
         response = self.client.get(f"{BASE_URL}?status=invalid")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # data = response.get_json()
-        # self.assertIn("Invalid status", data["message"])
+        data = response.get_json()
+        self.assertIn("Invalid status", data["message"])
 
     def test_list_recommendations_with_pagination(self):
         """It should list recommendations with pagination parameters"""
@@ -487,10 +487,10 @@ class TestYourResourceService(TestCase):
         )
         # Assert that the response should be 400 Bad Request
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # data = response.get_json()
+        data = response.get_json()
 
         # Ensure the correct error message is returned
-        # self.assertIn("Invalid recommended_id", data["message"])
+        self.assertIn("Invalid recommended_id", data["message"])
 
     # ----------------------------------------------------------
     # TEST UPDATE - invalid status
@@ -515,10 +515,10 @@ class TestYourResourceService(TestCase):
 
         # Assert that the response is 400 BAD REQUEST
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # data = response.get_json()
+        data = response.get_json()
 
-        # # Assert that the error message contains 'Invalid status'
-        # self.assertIn("Invalid status", data["message"])
+        # Assert that the error message contains 'Invalid status'
+        self.assertIn("Invalid status", data["message"])
 
     # ----------------------------------------------------------
     # TEST UPDATE - invalid recommendation type
@@ -543,10 +543,10 @@ class TestYourResourceService(TestCase):
 
         # Assert that the response is 400 BAD REQUEST
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # data = response.get_json()
+        data = response.get_json()
 
-        # # Assert that the error message contains 'Invalid recommendation_type'
-        # self.assertIn("Invalid recommendation_type", data["message"])
+        # Assert that the error message contains 'Invalid recommendation_type'
+        self.assertIn("Invalid recommendation_type", data["message"])
 
     # ----------------------------------------------------------
     # TEST UPDATE - Partial Update
@@ -600,8 +600,8 @@ class TestYourResourceService(TestCase):
             f"{BASE_URL}/{test_recommendation.id}", json=invalid_data
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # data = response.get_json()
-        # self.assertIn("Invalid product_id", data["message"])
+        data = response.get_json()
+        self.assertIn("Invalid product_id", data["message"])
 
     # ----------------------------------------------------------
     # TEST UPDATE - Invalid JSON Format
@@ -640,8 +640,8 @@ class TestYourResourceService(TestCase):
             BASE_URL, data=test_recommendation.serialize(), content_type="text/plain"
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-        # data = response.get_json()
-        # self.assertIn("Content-Type must be application/json", data["message"])
+        data = response.get_json()
+        self.assertIn("Content-Type", data["message"])
 
     # def test_update_recommendation_db_error(self):
     #     """It should return 500 Internal Server Error when a database error occurs during update"""
