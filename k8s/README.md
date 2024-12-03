@@ -23,10 +23,10 @@ This command should display cluster information if the cluster was created succe
 
 ### 2. Build the Docker Image
 
-Build the Docker image for the `recommendations` application using `.prodcontainer/Dockerfile`. Tag the image as `recommendations:1.0`:
+Build the Docker image for the `recommendations` application using `Dockerfile`. Tag the image as `recommendations:1.0`:
 
 ```bash
-docker build -t recommendations:1.0 -f .prodcontainer/Dockerfile .
+docker build -t recommendations:1.0 .
 ```
 
 ### 3. Configure Local Registry
