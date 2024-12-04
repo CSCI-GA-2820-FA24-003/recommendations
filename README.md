@@ -2,6 +2,8 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
+[![CI Build](https://github.com/CSCI-GA-2820-FA24-003/recommendations/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/CSCI-GA-2820-FA24-003/recommendations/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/CSCI-GA-2820-FA24-003/recommendations/graph/badge.svg?token=JMMX72MSRI)](https://codecov.io/github/CSCI-GA-2820-FA24-003/recommendations)
 
 ## Overview
 
@@ -103,8 +105,6 @@ A `Recommendations` object is represented as follows:
 ## Tests
 
 The current unit test code coverage is `95.83%` (last updated 10/14/2024). To test the microservice, run `make test`.
-[![CI Build](https://github.com/CSCI-GA-2820-FA24-003/recommendations/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/CSCI-GA-2820-FA24-003/recommendations/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/github/CSCI-GA-2820-FA24-003/recommendations/graph/badge.svg?token=JMMX72MSRI)](https://codecov.io/github/CSCI-GA-2820-FA24-003/recommendations)
 
 ## License
 
