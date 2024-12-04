@@ -21,7 +21,7 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Recommendations
 """
 # pylint: disable=unused-import
-import secrets
+# import secrets
 from flask_restx import Resource, fields, reqparse, inputs  # noqa: F401
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
