@@ -56,8 +56,8 @@ Scenario: Search for recommendations for product id 11
     And I press the "Search" button
     Then I should see the message "Success"
     And I should see "11" in the results
-    And I should not see "12" in the results
-    And I should not see "103" in the results
+    And I should not see "up-sell" in the results
+    And I should not see "draft" in the results
 
 Scenario: Search for active recommendations
     When I visit the "Home Page"
@@ -109,7 +109,7 @@ Scenario: Delete a Recommendation
     When I press the "Clear" button
     And I paste the "ID" field
     And I press the "Retrieve" button
-    Then I should see the message "404 Not Found"
+    Then I should see the message "was not found"
 
 Scenario: Like a recommendation
     When I visit the "Home Page"
